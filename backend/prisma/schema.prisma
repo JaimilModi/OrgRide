@@ -1,0 +1,58 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  ADMIN
+  EMPLOYEE
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum AccountStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+model Organization {
+  id        String     @id @default(uuid())
+  name      String     @unique
+  domain    String     @unique
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  employees Employee[]
+
+  @@map("organizations")
+}
+
+model Employee {
+  id                 String        @id @default(uuid())
+  orgId              String
+  employeeId         String        @unique
+  email              String        @unique
+  passwordHash       String
+  name               String
+  role               Role          @default(EMPLOYEE)
+  gender             Gender
+  languagePreference String        @default("en")
+  phone              String?
+  avatarUrl          String?
+  isFirstLogin       Boolean       @default(true)
+  status             AccountStatus @default(ACTIVE)
+  lastLogin          DateTime?
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+  organization       Organization  @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@map("employees")
+}

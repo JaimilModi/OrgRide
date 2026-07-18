@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>OrgRide Auth Test</title>
+</head>
+<body>
+  <h1>OrgRide Authentication Test Page</h1>
+  
+  <h2>1. Login Form</h2>
+  <form id="loginForm">
+    <div>
+      <label for="loginId">Login ID (Email or Employee ID):</label><br>
+      <input type="text" id="loginId" value="admin@acme.com" required>
+    </div>
+    <div>
+      <label for="password">Password:</label><br>
+      <input type="password" id="password" value="password123" required>
+    </div><br>
+    <button type="submit">Login</button>
+  </form>
+
+  <h2>2. Change Password Form (JWT Auth Required)</h2>
+  <form id="passwordForm">
+    <div>
+      <label for="authToken">Authorization Token:</label><br>
+      <textarea id="authToken" rows="3" style="width: 400px;" placeholder="Paste JWT token here if not automatically loaded"></textarea>
+    </div>
+    <div>
+      <label for="oldPassword">Old Password:</label><br>
+      <input type="password" id="oldPassword" value="password123" required>
+    </div>
+    <div>
+      <label for="newPassword">New Password:</label><br>
+      <input type="password" id="newPassword" placeholder="Min 8 chars" required>
+    </div><br>
+    <button type="submit">Change Password</button>
+  </form>
+
+  <h2>Response Output:</h2>
+  <pre id="output" style="background: #f0f0f0; padding: 10px; border: 1px solid #ccc; max-width: 600px; min-height: 50px; overflow: auto;"></pre>
+
+  <script>
+    const API_URL = 'http://localhost:5000/api/v1/auth';
+    const output = document.getElementById('output');
+    const authToken = document.getElementById('authToken');
+
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      output.innerText = 'Logging in...';
+      const loginId = document.getElementById('loginId').value;
+      const password = document.getElementById('password').value;
+
+      try {
+        const res = await fetch(`${API_URL}/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ loginId, password })
+        });
+        const json = await res.json();
+        output.innerText = JSON.stringify(json, null, 2);
+
+        if (json.success && json.data && json.data.token) {
+          authToken.value = json.data.token;
+          if (json.data.isFirstLogin) {
+            output.innerText += '\n\n⚠️ FIRST LOGIN DETECTED! Please change your password using the form below.';
+          }
+        }
+      } catch (err) {
+        output.innerText = 'Error: ' + err.message;
+      }
+    });
+
+    document.getElementById('passwordForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      output.innerText = 'Changing password...';
+      const token = authToken.value.trim();
+      const oldPassword = document.getElementById('oldPassword').value;
+      const newPassword = document.getElementById('newPassword').value;
+
+      try {
+        const res = await fetch(`${API_URL}/change-password`, {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ oldPassword, newPassword })
+        });
+        const json = await res.json();
+        output.innerText = JSON.stringify(json, null, 2);
+      } catch (err) {
+        output.innerText = 'Error: ' + err.message;
+      }
+    });
+  </script>
+</body>
+</html>
