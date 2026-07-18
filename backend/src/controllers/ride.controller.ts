@@ -78,3 +78,33 @@ export const deleteRide = async (req: AuthenticatedRequest, res: Response, next:
     next(error);
   }
 };
+
+export const searchRides = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const currentUserId = req.user!.id;
+    const result = await RideService.searchRides(req.query, currentUserId);
+
+    res.status(StatusCodes.OK).json({
+      success: true,
+      data: result.rides,
+      pagination: result.pagination
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getPublicRide = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const currentUserId = req.user!.id;
+    const ride = await RideService.getPublicRideById(req.params.id, currentUserId);
+
+    res.status(StatusCodes.OK).json({
+      success: true,
+      data: ride
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+

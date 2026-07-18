@@ -287,4 +287,128 @@ export class RideService {
       }
     });
   }
+
+  /**
+   * Search available rides
+   */
+  static async searchRides(filters: any, currentUserId: string) {
+    const {
+      source,
+      destination,
+      pickupDate,
+      femaleOnly,
+      minSeats,
+      sortBy,
+      sortOrder = 'asc',
+      page = 1,
+      limit = 10
+    } = filters;
+
+    const whereClause: any = {
+      driverId: { not: currentUserId },
+      status: 'SCHEDULED',
+      pickupAt: { gt: new Date() },
+      availableSeats: { gt: prisma.ride.fields.bookedSeats },
+      vehicle: {
+        status: 'ACTIVE',
+        verificationStatus: 'VERIFIED'
+      }
+    };
+
+    if (source) {
+      whereClause.sourceAddress = { contains: source, mode: 'insensitive' };
+    }
+    if (destination) {
+      whereClause.destinationAddress = { contains: destination, mode: 'insensitive' };
+    }
+    if (femaleOnly !== undefined) {
+      whereClause.femaleOnly = femaleOnly;
+    }
+    if (pickupDate) {
+      const [year, month, day] = pickupDate.split('-').map(Number);
+      const startOfSearchDay = new Date(Date.UTC(year, month - 1, day, 0, 0, 0, 0));
+      const endOfSearchDay = new Date(Date.UTC(year, month - 1, day, 23, 59, 59, 999));
+      whereClause.pickupAt = {
+        gt: new Date(),
+        gte: startOfSearchDay,
+        lte: endOfSearchDay
+      };
+    }
+
+    const allMatchingRides = await prisma.ride.findMany({
+      where: whereClause,
+      include: {
+        driver: {
+          select: {
+            name: true,
+            languagePreference: true
+          }
+        },
+        vehicle: {
+          select: {
+            brand: true,
+            model: true,
+            type: true
+          }
+        }
+      },
+      orderBy: sortBy === 'pricePerSeat'
+        ? { pricePerSeat: sortOrder }
+        : { pickupAt: sortOrder }
+    });
+
+    // Filter by remaining seats
+    const targetMinSeats = minSeats !== undefined ? minSeats : 1;
+    const filteredRides = allMatchingRides.filter(r => {
+      const remaining = r.availableSeats - r.bookedSeats;
+      return remaining >= targetMinSeats;
+    });
+
+    const totalItems = filteredRides.length;
+    const startIndex = (page - 1) * limit;
+    const paginatedRides = filteredRides.slice(startIndex, startIndex + limit);
+
+    return {
+      rides: paginatedRides,
+      pagination: {
+        totalItems,
+        page,
+        limit,
+        totalPages: Math.ceil(totalItems / limit)
+      }
+    };
+  }
+
+  /**
+   * Get public details of a ride for discovery
+   */
+  static async getPublicRideById(id: string, currentUserId: string) {
+    const ride = await prisma.ride.findUnique({
+      where: { id },
+      include: {
+        driver: {
+          select: {
+            name: true,
+            languagePreference: true
+          }
+        },
+        vehicle: {
+          select: {
+            brand: true,
+            model: true,
+            type: true,
+            color: true,
+            seatingCapacity: true
+          }
+        }
+      }
+    });
+
+    if (!ride) {
+      throw new NotFoundError('Ride not found');
+    }
+
+    return ride;
+  }
 }
+

@@ -7,6 +7,7 @@ import organizationRouter from './routes/organization.route.js';
 import uploadRouter from './routes/upload.route.js';
 import vehicleRouter from './routes/vehicle.route.js';
 import rideRouter from './routes/ride.route.js';
+import bookingRouter from './routes/booking.route.js';
 import { errorHandler } from './middleware/error.middleware.js';
 
 const app = express();
@@ -22,8 +23,10 @@ app.use('/api/v1/organization', organizationRouter);
 app.use('/api/v1/upload', uploadRouter);
 app.use('/api/v1/vehicles', vehicleRouter);
 app.use('/api/v1/rides', rideRouter);
+app.use('/api/v1/bookings', bookingRouter);
 
 // Centralized error handler
 app.use(errorHandler);
 
 export default app;
+

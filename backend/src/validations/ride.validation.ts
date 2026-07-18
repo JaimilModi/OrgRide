@@ -57,3 +57,33 @@ export const UpdateRideSchema = z.object({
     femaleOnly: z.boolean().optional()
   })
 });
+
+export const SearchRidesSchema = z.object({
+  query: z.object({
+    source: z.string().optional(),
+    destination: z.string().optional(),
+    pickupDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Pickup date must be in YYYY-MM-DD format').optional(),
+    femaleOnly: z.preprocess((val) => {
+      if (val === 'true' || val === true) return true;
+      if (val === 'false' || val === false) return false;
+      return undefined;
+    }, z.boolean().optional()),
+    minSeats: z.preprocess((val) => {
+      if (typeof val === 'string') return parseInt(val, 10);
+      return val;
+    }, z.number().int().optional()),
+    sortBy: z.enum(['pickupAt', 'pricePerSeat']).optional(),
+    sortOrder: z.enum(['asc', 'desc']).optional(),
+    page: z.preprocess((val) => {
+      if (typeof val === 'string') return parseInt(val, 10);
+      if (typeof val === 'number') return val;
+      return undefined;
+    }, z.number().int().default(1)),
+    limit: z.preprocess((val) => {
+      if (typeof val === 'string') return parseInt(val, 10);
+      if (typeof val === 'number') return val;
+      return undefined;
+    }, z.number().int().default(10)),
+  })
+});
+

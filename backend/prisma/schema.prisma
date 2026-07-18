@@ -99,6 +99,7 @@ model Employee {
   organization       Organization  @relation(fields: [orgId], references: [id], onDelete: Cascade)
   vehicles           Vehicle[]
   rides              Ride[]
+  bookings           RideParticipant[]
 
   @@map("employees")
 }
@@ -131,10 +132,10 @@ model Vehicle {
 }
 
 model Ride {
-  id                 String        @id @default(uuid())
+  id                 String            @id @default(uuid())
   driverId           String
   vehicleId          String
-  rideCode           String        @unique
+  rideCode           String            @unique
   sourceAddress      String
   sourceLatitude     Decimal
   sourceLongitude    Decimal
@@ -144,14 +145,37 @@ model Ride {
   pickupAt           DateTime
   pricePerSeat       Decimal
   availableSeats     Int
-  bookedSeats        Int           @default(0)
+  bookedSeats        Int               @default(0)
   notes              String?
-  femaleOnly         Boolean       @default(false)
-  status             RideStatus    @default(SCHEDULED)
-  createdAt          DateTime      @default(now())
-  updatedAt          DateTime      @updatedAt
-  driver             Employee      @relation(fields: [driverId], references: [id], onDelete: Cascade)
-  vehicle            Vehicle       @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  femaleOnly         Boolean           @default(false)
+  status             RideStatus        @default(SCHEDULED)
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+  driver             Employee          @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  vehicle            Vehicle           @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  participants       RideParticipant[]
 
   @@map("rides")
 }
+
+enum BookingStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  CANCELLED
+}
+
+model RideParticipant {
+  id           String        @id @default(uuid())
+  rideId       String
+  passengerId  String
+  seatsBooked  Int
+  status       BookingStatus @default(PENDING)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  ride         Ride          @relation(fields: [rideId], references: [id], onDelete: Cascade)
+  passenger    Employee      @relation(fields: [passengerId], references: [id], onDelete: Cascade)
+
+  @@map("ride_participants")
+}
+

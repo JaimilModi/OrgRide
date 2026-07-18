@@ -31,6 +31,8 @@
       <button onclick="fetchOrganization()">GET Org Details</button>
       <button onclick="fetchVehicles()">GET My Vehicles</button>
       <button onclick="fetchRides()">GET My Offered Rides</button>
+      <button onclick="fetchMyBookings()">GET My Bookings</button>
+      <button onclick="fetchDriverRequests()">GET Booking Requests</button>
     </div>
 
     <!-- Column 2: Operations -->
@@ -254,6 +256,72 @@
           <button type="submit" id="rideBtn">Offer Ride</button>
           <button type="button" onclick="resetRideForm()">Reset Form</button>
         </form>
+      </fieldset>
+
+      <!-- Ride Discovery Search -->
+      <fieldset style="margin-bottom: 20px; margin-top: 10px;">
+        <legend>Ride Discovery (Search Available Rides)</legend>
+        <form id="searchRidesForm">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+            <div>
+              <label>Source Address Contains:</label><br>
+              <input type="text" id="searchSource" placeholder="Office" style="width:100%;">
+            </div>
+            <div>
+              <label>Destination Address Contains:</label><br>
+              <input type="text" id="searchDestination" placeholder="Railway" style="width:100%;">
+            </div>
+            <div>
+              <label>Date (YYYY-MM-DD):</label><br>
+              <input type="date" id="searchDate" style="width:100%;">
+            </div>
+            <div>
+              <label>Min Seats Required:</label><br>
+              <input type="number" id="searchMinSeats" value="1" min="1" style="width:100%;">
+            </div>
+            <div>
+              <label>Sort By:</label><br>
+              <select id="searchSortBy" style="width:100%;">
+                <option value="pickupAt">Earliest Pickup</option>
+                <option value="pricePerSeat">Lowest Price</option>
+              </select>
+            </div>
+            <div>
+              <label>Sort Order:</label><br>
+              <select id="searchSortOrder" style="width:100%;">
+                <option value="asc">Ascending</option>
+                <option value="desc">Descending</option>
+              </select>
+            </div>
+            <div>
+              <label>Female Only:</label><br>
+              <input type="checkbox" id="searchFemaleOnly"> Female Only Rides
+            </div>
+          </div>
+          <button type="submit">Search Rides</button>
+        </form>
+
+        <h3 style="margin-top: 15px;">Search Results</h3>
+        <div id="searchResultsContainer" style="border: 1px dashed #777; padding: 10px; min-height: 40px; font-size: 13px;">
+          No search results yet. Fill parameters and click "Search Rides".
+        </div>
+      </fieldset>
+
+      <!-- Booking Management -->
+      <fieldset style="margin-bottom: 20px; margin-top: 10px;">
+        <legend>Bookings & Requests Panel</legend>
+        
+        <h3>My Bookings (As Passenger)</h3>
+        <button onclick="fetchMyBookings()">Refresh My Bookings</button>
+        <div id="myBookingsContainer" style="border: 1px dashed #777; padding: 10px; margin-top: 10px; margin-bottom: 15px; min-height: 40px; font-size: 13px;">
+          Click "Refresh My Bookings" or load.
+        </div>
+
+        <h3>Incoming Booking Requests (As Driver)</h3>
+        <button onclick="fetchDriverRequests()">Refresh Booking Requests</button>
+        <div id="incomingRequestsContainer" style="border: 1px dashed #777; padding: 10px; margin-top: 10px; min-height: 40px; font-size: 13px;">
+          Click "Refresh Booking Requests" or load.
+        </div>
       </fieldset>
     </div>
   </div>
@@ -669,6 +737,226 @@
         }
       } catch (err) {
         output.innerText = 'Error cancelling ride: ' + err.message;
+      }
+    }
+
+    // ==========================================
+    // RIDE DISCOVERY & BOOKINGS INTERACTION SCRIPTS
+    // ==========================================
+
+    // Search Rides Submit
+    document.getElementById('searchRidesForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      output.innerText = 'Searching rides...';
+      const source = document.getElementById('searchSource').value;
+      const destination = document.getElementById('searchDestination').value;
+      const date = document.getElementById('searchDate').value;
+      const minSeats = document.getElementById('searchMinSeats').value;
+      const sortBy = document.getElementById('searchSortBy').value;
+      const sortOrder = document.getElementById('searchSortOrder').value;
+      const femaleOnly = document.getElementById('searchFemaleOnly').checked;
+
+      const params = new URLSearchParams();
+      if (source) params.append('source', source);
+      if (destination) params.append('destination', destination);
+      if (date) params.append('pickupDate', date);
+      if (minSeats) params.append('minSeats', minSeats);
+      if (sortBy) params.append('sortBy', sortBy);
+      if (sortOrder) params.append('sortOrder', sortOrder);
+      if (femaleOnly) params.append('femaleOnly', 'true');
+
+      try {
+        const res = await fetch(`${API_BASE}/rides/search?${params.toString()}`, {
+          headers: getHeaders()
+        });
+        const json = await res.json();
+        output.innerText = JSON.stringify(json, null, 2);
+
+        const container = document.getElementById('searchResultsContainer');
+        if (json.success && json.data && json.data.length > 0) {
+          container.innerHTML = json.data.map(r => {
+            const remaining = r.availableSeats - r.bookedSeats;
+            return `
+              <div style="border-bottom: 1px solid #bbb; padding: 10px 0; display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                  <strong>[Code: ${r.rideCode}]</strong> ${r.sourceAddress} ➡️ ${r.destinationAddress}<br>
+                  <span style="font-size:12px; color:#555;">
+                    Driver: ${r.driver.name} (Lang: ${r.driver.languagePreference}) | Price: ₹${r.pricePerSeat} | 
+                    Vehicle: ${r.vehicle.brand} ${r.vehicle.model} (${r.vehicle.type}) | 
+                    Remaining Seats: ${remaining}/${r.availableSeats} | 
+                    Departure: ${new Date(r.pickupAt).toLocaleString()} (UTC)
+                  </span>
+                </div>
+                <div style="display: flex; gap: 5px; align-items: center;">
+                  <button onclick="viewPublicDetails('${r.id}')">View Details</button>
+                  <input type="number" id="bookSeats-${r.id}" value="1" min="1" max="8" style="width: 40px;">
+                  <button onclick="bookRide('${r.id}')" style="background:#4CAF50; color:white; border:none; padding:4px 8px; cursor:pointer;">Book</button>
+                </div>
+              </div>
+            `;
+          }).join('');
+        } else {
+          container.innerHTML = 'No matching rides found.';
+        }
+      } catch (err) {
+        output.innerText = 'Error searching rides: ' + err.message;
+      }
+    });
+
+    // View Public Details of Ride
+    async function viewPublicDetails(rideId) {
+      output.innerText = 'Fetching public details...';
+      try {
+        const res = await fetch(`${API_BASE}/rides/public/${rideId}`, {
+          headers: getHeaders()
+        });
+        const json = await res.json();
+        output.innerText = JSON.stringify(json, null, 2);
+      } catch (err) {
+        output.innerText = 'Error fetching public details: ' + err.message;
+      }
+    }
+
+    // Book a Ride
+    async function bookRide(rideId) {
+      const seatsInput = document.getElementById(`bookSeats-${rideId}`);
+      const seatsBooked = parseInt(seatsInput.value, 10);
+      output.innerText = 'Submitting booking request...';
+
+      try {
+        const res = await fetch(`${API_BASE}/bookings`, {
+          method: 'POST',
+          headers: getHeaders(),
+          body: JSON.stringify({ rideId, seatsBooked })
+        });
+        const json = await res.json();
+        output.innerText = JSON.stringify(json, null, 2);
+        if (json.success) {
+          fetchMyBookings();
+        }
+      } catch (err) {
+        output.innerText = 'Error booking ride: ' + err.message;
+      }
+    }
+
+    // Fetch Passenger Bookings
+    async function fetchMyBookings() {
+      const container = document.getElementById('myBookingsContainer');
+      container.innerText = 'Loading...';
+      try {
+        const res = await fetch(`${API_BASE}/bookings/me`, {
+          headers: getHeaders()
+        });
+        const json = await res.json();
+        output.innerText = JSON.stringify(json, null, 2);
+
+        if (json.success && json.data && json.data.length > 0) {
+          container.innerHTML = json.data.map(b => `
+            <div style="border-bottom: 1px solid #ccc; padding: 8px 0; display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <strong>[Booking: ${b.id.slice(0,8)}]</strong> Ride: ${b.ride.rideCode}<br>
+                Route: ${b.ride.sourceAddress} ➡️ ${b.ride.destinationAddress}<br>
+                Driver: ${b.ride.driver.name} | Vehicle: ${b.ride.vehicle.brand} ${b.ride.vehicle.model}<br>
+                Seats Booked: ${b.seatsBooked} | Status: <span style="font-weight:bold;">${b.status}</span>
+              </div>
+              <div>
+                <button onclick="cancelBooking('${b.id}')" style="color:red;" ${b.status !== 'PENDING' && b.status !== 'ACCEPTED' ? 'disabled' : ''}>Cancel</button>
+              </div>
+            </div>
+          `).join('');
+        } else {
+          container.innerHTML = 'No bookings found.';
+        }
+      } catch (err) {
+        container.innerText = 'Error loading bookings: ' + err.message;
+      }
+    }
+
+    // Cancel Booking
+    async function cancelBooking(bookingId) {
+      if (!confirm('Are you sure you want to cancel this booking?')) return;
+      output.innerText = 'Cancelling booking...';
+      try {
+        const res = await fetch(`${API_BASE}/bookings/${bookingId}/cancel`, {
+          method: 'PATCH',
+          headers: getHeaders()
+        });
+        const json = await res.json();
+        output.innerText = JSON.stringify(json, null, 2);
+        if (json.success) {
+          fetchMyBookings();
+        }
+      } catch (err) {
+        output.innerText = 'Error cancelling booking: ' + err.message;
+      }
+    }
+
+    // Fetch Driver Booking Requests
+    async function fetchDriverRequests() {
+      const container = document.getElementById('incomingRequestsContainer');
+      container.innerText = 'Loading...';
+      try {
+        const res = await fetch(`${API_BASE}/bookings/requests`, {
+          headers: getHeaders()
+        });
+        const json = await res.json();
+        output.innerText = JSON.stringify(json, null, 2);
+
+        if (json.success && json.data && json.data.length > 0) {
+          container.innerHTML = json.data.map(req => `
+            <div style="border-bottom: 1px solid #ccc; padding: 8px 0; display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <strong>[Request: ${req.id.slice(0,8)}]</strong> Ride: ${req.ride.rideCode}<br>
+                Passenger: ${req.passenger.name}<br>
+                Seats Requested: ${req.seatsBooked} | Status: <span style="font-weight:bold;">${req.status}</span>
+              </div>
+              <div style="display:flex; gap:5px;">
+                <button onclick="acceptRequest('${req.id}')" style="color:green;" ${req.status !== 'PENDING' ? 'disabled' : ''}>Accept</button>
+                <button onclick="rejectRequest('${req.id}')" style="color:red;" ${req.status !== 'PENDING' ? 'disabled' : ''}>Reject</button>
+              </div>
+            </div>
+          `).join('');
+        } else {
+          container.innerHTML = 'No incoming requests found.';
+        }
+      } catch (err) {
+        container.innerText = 'Error loading requests: ' + err.message;
+      }
+    }
+
+    // Accept Booking Request
+    async function acceptRequest(bookingId) {
+      output.innerText = 'Accepting request...';
+      try {
+        const res = await fetch(`${API_BASE}/bookings/${bookingId}/accept`, {
+          method: 'PATCH',
+          headers: getHeaders()
+        });
+        const json = await res.json();
+        output.innerText = JSON.stringify(json, null, 2);
+        if (json.success) {
+          fetchDriverRequests();
+        }
+      } catch (err) {
+        output.innerText = 'Error accepting booking: ' + err.message;
+      }
+    }
+
+    // Reject Booking Request
+    async function rejectRequest(bookingId) {
+      output.innerText = 'Rejecting request...';
+      try {
+        const res = await fetch(`${API_BASE}/bookings/${bookingId}/reject`, {
+          method: 'PATCH',
+          headers: getHeaders()
+        });
+        const json = await res.json();
+        output.innerText = JSON.stringify(json, null, 2);
+        if (json.success) {
+          fetchDriverRequests();
+        }
+      } catch (err) {
+        output.innerText = 'Error rejecting booking: ' + err.message;
       }
     }
   </script>
