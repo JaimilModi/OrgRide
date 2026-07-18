@@ -1,4 +1,7 @@
 Builds
 .env
+.env.local
 node_modules
 backend/dist
+frontend/.next
+frontend/out

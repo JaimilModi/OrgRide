@@ -1,0 +1,84 @@
+@import "tailwindcss";
+
+/* ============================================================
+   OrgRide Design Tokens — Tailwind CSS 4 Theme
+   ============================================================ */
+@theme inline {
+  /* Primary — Deep forest / dark teal */
+  --color-primary-950: #0a1f1d;
+  --color-primary-900: #0f2e2a;
+  --color-primary-800: #143d38;
+  --color-primary-700: #1a5249;
+  --color-primary-600: #21685c;
+  --color-primary-500: #2a8173;
+  --color-primary-400: #36a08d;
+  --color-primary-300: #5cbfab;
+  --color-primary-200: #93d6c8;
+  --color-primary-100: #c9ede5;
+  --color-primary-50: #edf8f5;
+
+  /* Accent — Electric mint / mobility green */
+  --color-accent-700: #0d9668;
+  --color-accent-600: #10b981;
+  --color-accent-500: #22d39a;
+  --color-accent-400: #4eeab5;
+  --color-accent-300: #86f0cd;
+  --color-accent-200: #b8f5e1;
+  --color-accent-100: #e0fbf1;
+
+  /* Route blue — secondary for maps/routes */
+  --color-route-600: #2563eb;
+  --color-route-500: #3b82f6;
+  --color-route-400: #60a5fa;
+  --color-route-100: #dbeafe;
+
+  /* Neutrals */
+  --color-neutral-950: #0c0e12;
+  --color-neutral-900: #141820;
+  --color-neutral-800: #1e2530;
+  --color-neutral-700: #313a48;
+  --color-neutral-600: #4a5568;
+  --color-neutral-500: #64748b;
+  --color-neutral-400: #94a3b8;
+  --color-neutral-300: #cbd5e1;
+  --color-neutral-200: #e2e8f0;
+  --color-neutral-100: #f1f5f9;
+  --color-neutral-50: #f8fafc;
+
+  /* Semantic */
+  --color-surface: #fafbfc;
+  --color-surface-warm: #f5f3f0;
+  --color-success: #059669;
+  --color-warning: #d97706;
+  --color-error: #dc2626;
+
+  /* Fonts */
+  --font-sans: var(--font-inter);
+}
+
+/* ============================================================
+   Base Reset & Global Styles
+   ============================================================ */
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 5rem;
+}
+
+body {
+  background-color: var(--color-surface);
+  color: var(--color-neutral-900);
+  font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+/* Removed excessive route animations for cleaner hackathon presentation */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
