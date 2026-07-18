@@ -20,6 +20,15 @@ const envSchema = z.object({
     required_error: 'JWT_SECRET environment variable is required',
   }),
   JWT_EXPIRES_IN: z.string().default('24h'),
+  CLOUDINARY_CLOUD_NAME: z.string({
+    required_error: 'CLOUDINARY_CLOUD_NAME environment variable is required',
+  }),
+  CLOUDINARY_API_KEY: z.string({
+    required_error: 'CLOUDINARY_API_KEY environment variable is required',
+  }),
+  CLOUDINARY_API_SECRET: z.string({
+    required_error: 'CLOUDINARY_API_SECRET environment variable is required',
+  }),
 });
 
 const parsed = envSchema.safeParse(process.env);
