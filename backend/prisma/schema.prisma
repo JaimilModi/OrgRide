@@ -1,0 +1,249 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  ADMIN
+  EMPLOYEE
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum AccountStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+enum VehicleStatus {
+  ACTIVE
+  INACTIVE
+  UNDER_MAINTENANCE
+}
+
+enum VerificationStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+enum VehicleType {
+  HATCHBACK
+  SEDAN
+  SUV
+  BIKE
+  OTHER
+}
+
+enum FuelType {
+  PETROL
+  DIESEL
+  CNG
+  EV
+  HYBRID
+}
+
+enum RideStatus {
+  SCHEDULED
+  STARTED
+  COMPLETED
+  CANCELLED
+}
+
+model Organization {
+  id          String     @id @default(uuid())
+  name        String     @unique
+  domain      String     @unique
+  logoUrl     String?
+  description String?
+  address     String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  employees   Employee[]
+
+  @@map("organizations")
+}
+
+model Employee {
+  id                 String        @id @default(uuid())
+  orgId              String
+  employeeId         String        @unique
+  email              String        @unique
+  passwordHash       String
+  name               String
+  role               Role          @default(EMPLOYEE)
+  gender             Gender
+  languagePreference String        @default("en")
+  phone              String?
+  avatarUrl          String?
+  address            String?
+  emergencyContact   String?
+  department         String?
+  designation        String?
+  workShift          String?
+  profilePhoto       String?
+  isFirstLogin       Boolean       @default(true)
+  status             AccountStatus @default(ACTIVE)
+  lastLogin          DateTime?
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+  organization       Organization  @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  vehicles           Vehicle[]
+  rides              Ride[]
+  bookings           RideParticipant[]
+  wallet             Wallet?
+  reportsCreated     Report[]      @relation("ReporterRelation")
+  reportsReceived    Report[]      @relation("ReportedUserRelation")
+
+  @@map("employees")
+}
+
+model Vehicle {
+  id                 String             @id @default(uuid())
+  ownerId            String
+  vehicleNumber      String             @unique
+  type               VehicleType
+  brand              String
+  model              String
+  color              String
+  fuelType           FuelType
+  seatingCapacity    Int
+  registrationYear   Int
+  vehicleImage       String
+  rcNumber           String             @unique
+  rcImage            String
+  insuranceExpiry    DateTime
+  pollutionExpiry    DateTime?
+  isDefault          Boolean            @default(false)
+  status             VehicleStatus      @default(ACTIVE)
+  verificationStatus VerificationStatus @default(PENDING)
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  employee           Employee           @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  rides              Ride[]
+
+  @@map("vehicles")
+}
+
+model Ride {
+  id                 String            @id @default(uuid())
+  driverId           String
+  vehicleId          String
+  rideCode           String            @unique
+  sourceAddress      String
+  sourceLatitude     Decimal
+  sourceLongitude    Decimal
+  destinationAddress String
+  destinationLatitude  Decimal
+  destinationLongitude Decimal
+  pickupAt           DateTime
+  pricePerSeat       Decimal
+  availableSeats     Int
+  bookedSeats        Int               @default(0)
+  notes              String?
+  femaleOnly         Boolean           @default(false)
+  status             RideStatus        @default(SCHEDULED)
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+  driver             Employee          @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  vehicle            Vehicle           @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  participants       RideParticipant[]
+  reports            Report[]
+
+  @@map("rides")
+}
+
+enum BookingStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  CANCELLED
+}
+
+model RideParticipant {
+  id           String        @id @default(uuid())
+  rideId       String
+  passengerId  String
+  seatsBooked  Int
+  status       BookingStatus @default(PENDING)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  ride         Ride          @relation(fields: [rideId], references: [id], onDelete: Cascade)
+  passenger    Employee      @relation(fields: [passengerId], references: [id], onDelete: Cascade)
+
+  @@map("ride_participants")
+}
+
+enum TransactionType {
+  RECHARGE
+  PAYMENT
+  REFUND
+  CREDIT
+}
+
+model Wallet {
+  id         String              @id @default(uuid())
+  employeeId String              @unique
+  balance    Decimal             @default(0.0)
+  createdAt  DateTime            @default(now())
+  updatedAt  DateTime            @updatedAt
+  employee   Employee            @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  transactions WalletTransaction[]
+
+  @@map("wallets")
+}
+
+model WalletTransaction {
+  id          String          @id @default(uuid())
+  walletId    String
+  amount      Decimal
+  type        TransactionType
+  description String?
+  createdAt   DateTime        @default(now())
+  wallet      Wallet          @relation(fields: [walletId], references: [id], onDelete: Cascade)
+
+  @@map("wallet_transactions")
+}
+
+enum ReportCategory {
+  DRIVER_LATE
+  PASSENGER_LATE
+  VEHICLE
+  PAYMENT
+  SAFETY
+  OTHER
+}
+
+enum ReportStatus {
+  PENDING
+  REVIEWING
+  RESOLVED
+}
+
+model Report {
+  id             String         @id @default(uuid())
+  rideId         String
+  reporterId     String
+  reportedUserId String
+  category       ReportCategory
+  description    String
+  status         ReportStatus   @default(PENDING)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  ride           Ride           @relation(fields: [rideId], references: [id], onDelete: Cascade)
+  reporter       Employee       @relation("ReporterRelation", fields: [reporterId], references: [id], onDelete: Cascade)
+  reportedUser   Employee       @relation("ReportedUserRelation", fields: [reportedUserId], references: [id], onDelete: Cascade)
+
+  @@map("reports")
+}
+

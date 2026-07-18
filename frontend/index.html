@@ -1,0 +1,3025 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OrgRide — Corporate Ride Sharing</title>
+  <!-- Tailwind CSS v3 -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Font: Inter -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- Socket.IO Client -->
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    .glass-panel {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+  </style>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+        },
+      },
+    }
+  </script>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+  <!-- ========================================== -->
+  <!-- TOAST NOTIFICATION CONTAINER -->
+  <!-- ========================================== -->
+  <div id="toastContainer" class="fixed bottom-5 right-5 z-[9999] flex flex-col gap-2 max-w-sm w-full pointer-events-none"></div>
+
+  <!-- ========================================== -->
+  <!-- LOGGED OUT VIEW: AUTH PAGES -->
+  <!-- ========================================== -->
+  <div id="authSection" class="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8 bg-gradient-to-br from-indigo-900 via-slate-900 to-violet-950 relative overflow-hidden">
+    <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(99,102,241,0.15),transparent)] pointer-events-none"></div>
+    <div class="absolute -top-40 -left-40 w-80 h-80 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+    <div class="sm:mx-auto sm:w-full sm:max-w-md relative z-10 text-center">
+      <div class="inline-flex items-center justify-center p-3 bg-white/10 rounded-2xl backdrop-blur-md mb-4 border border-white/20">
+        <i data-lucide="car" class="h-10 w-10 text-indigo-400"></i>
+      </div>
+      <h1 class="text-4xl font-extrabold text-white tracking-tight">OrgRide</h1>
+      <p class="mt-2 text-sm text-slate-400">Premium Corporate Ride-Sharing & Commuting Portal</p>
+    </div>
+
+    <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md relative z-10 px-4 sm:px-0">
+      <!-- Login Card -->
+      <div class="glass-panel border border-white/20 py-8 px-6 shadow-2xl rounded-2xl sm:px-10">
+        
+        <div class="text-center mb-6">
+          <h2 class="text-2xl font-black text-slate-800 tracking-tight">Welcome Back</h2>
+          <p class="text-sm text-slate-500 mt-1">Sign in to your corporate account.</p>
+        </div>
+
+        <!-- Login Form -->
+        <form id="loginForm" class="space-y-5" onsubmit="handleLogin(event)">
+          <div>
+            <label for="loginId" class="block text-xs font-semibold text-slate-600 uppercase tracking-wider">Employee Email / ID</label>
+            <div class="mt-1 relative">
+              <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400"><i data-lucide="mail" class="h-4 w-4"></i></span>
+              <input id="loginId" type="text" required class="pl-10 block w-full rounded-lg border-slate-200 bg-white/50 border shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2.5">
+            </div>
+          </div>
+
+          <div>
+            <label for="password" class="block text-xs font-semibold text-slate-600 uppercase tracking-wider">Password</label>
+            <div class="mt-1 relative">
+              <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400"><i data-lucide="lock" class="h-4 w-4"></i></span>
+              <input id="password" type="password" required class="pl-10 pr-10 block w-full rounded-lg border-slate-200 bg-white/50 border shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2.5">
+              <button type="button" onclick="togglePasswordVisibility('password')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600"><i data-lucide="eye" class="h-4 w-4"></i></button>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between">
+            <div class="flex items-center">
+              <input id="remember_me" type="checkbox" checked class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+              <label for="remember_me" class="ml-2 block text-sm text-slate-600">Remember credentials</label>
+            </div>
+          </div>
+
+          <button type="submit" class="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-white bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all transform hover:-translate-y-0.5">
+            <span id="loginSpinner" class="hidden mr-2"><i data-lucide="loader" class="animate-spin h-4 w-4"></i></span>
+            Sign In Account
+          </button>
+        </form>
+
+        <!-- Demo Accounts Section -->
+        <div class="mt-8 pt-6 border-t border-slate-200">
+          <p class="text-xs font-bold text-slate-400 uppercase tracking-wider text-center mb-4">Demo Accounts</p>
+          <div class="grid grid-cols-2 gap-4">
+            <div class="bg-indigo-50 rounded-xl p-3 border border-indigo-100 text-center cursor-pointer hover:bg-indigo-100 transition-colors" onclick="document.getElementById('loginId').value='admin@acme.com'; document.getElementById('password').value='password123';">
+              <p class="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-1">Admin</p>
+              <p class="text-xs font-bold text-indigo-900">admin@acme.com</p>
+              <p class="text-xs text-indigo-600 font-mono mt-0.5">password123</p>
+            </div>
+            <div class="bg-emerald-50 rounded-xl p-3 border border-emerald-100 text-center cursor-pointer hover:bg-emerald-100 transition-colors" onclick="document.getElementById('loginId').value='diana@acme.com'; document.getElementById('password').value='password123';">
+              <p class="text-[10px] font-black text-emerald-500 uppercase tracking-widest mb-1">Employee</p>
+              <p class="text-xs font-bold text-emerald-900">diana@acme.com</p>
+              <p class="text-xs text-emerald-600 font-mono mt-0.5">password123</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- LOGGED IN VIEW: UNIFIED DASHBOARD -->
+  <!-- ========================================== -->
+  <div id="dashboardSection" class="hidden min-h-screen flex flex-col md:flex-row">
+    
+    <!-- Sidebar Navigation -->
+    <aside class="w-full md:w-64 bg-slate-900 text-slate-300 flex flex-col shrink-0">
+      <div class="h-16 flex items-center gap-2 px-6 border-b border-slate-800 bg-slate-950">
+        <i data-lucide="car" class="h-6 w-6 text-indigo-400"></i>
+        <span class="text-lg font-bold text-white tracking-wide">OrgRide Dashboard</span>
+      </div>
+      
+      <!-- User Profile Card in Sidebar -->
+      <div class="p-4 border-b border-slate-800 bg-slate-950/40">
+        <div class="flex items-center gap-3">
+          <div class="relative">
+            <img id="sidebarAvatar" src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=faces" class="h-10 w-10 rounded-full border border-slate-700" alt="Avatar">
+            <span class="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full bg-emerald-400 ring-2 ring-slate-900"></span>
+          </div>
+          <div class="truncate">
+            <h3 id="sidebarName" class="text-sm font-semibold text-white truncate">Bob Employee</h3>
+            <span id="sidebarRole" class="text-xs text-slate-500 uppercase tracking-wider">EMPLOYEE</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Nav Links -->
+      <nav class="flex-1 px-4 py-4 space-y-1.5 overflow-y-auto">
+        <button onclick="switchTab('home')" id="nav-home" class="nav-item w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-all hover:bg-slate-800 hover:text-white bg-slate-800 text-white">
+          <i data-lucide="home" class="h-4 w-4"></i> Dashboard
+        </button>
+        <button onclick="switchTab('profile')" id="nav-profile" class="nav-item w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-all hover:bg-slate-800 hover:text-slate-200">
+          <i data-lucide="user" class="h-4 w-4"></i> My Profile
+        </button>
+        <button onclick="switchTab('vehicles')" id="nav-vehicles" class="nav-item w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-all hover:bg-slate-800 hover:text-slate-200">
+          <i data-lucide="award" class="h-4 w-4"></i> My Vehicles
+        </button>
+        <button onclick="switchTab('offer-ride')" id="nav-offer-ride" class="nav-item w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-all hover:bg-slate-800 hover:text-slate-200">
+          <i data-lucide="plus-circle" class="h-4 w-4"></i> Offer Ride
+        </button>
+        <button onclick="switchTab('find-ride')" id="nav-find-ride" class="nav-item w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-all hover:bg-slate-800 hover:text-slate-200">
+          <i data-lucide="search" class="h-4 w-4"></i> Find Ride
+        </button>
+        <button onclick="switchTab('bookings')" id="nav-bookings" class="nav-item w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-all hover:bg-slate-800 hover:text-slate-200 relative">
+          <i data-lucide="calendar" class="h-4 w-4"></i> Bookings & Offers
+          <span id="bookingCountBadge" class="hidden absolute right-3 bg-indigo-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full"></span>
+        </button>
+        <button onclick="switchTab('wallet')" id="nav-wallet" class="nav-item w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-all hover:bg-slate-800 hover:text-slate-200">
+          <i data-lucide="wallet" class="h-4 w-4"></i> Wallet
+        </button>
+        <button onclick="switchTab('reports')" id="nav-reports" class="nav-item w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-all hover:bg-slate-800 hover:text-slate-200">
+          <i data-lucide="alert-triangle" class="h-4 w-4"></i> Incident Reports
+        </button>
+
+        <!-- Admin Only Section -->
+        <div id="navAdminSection" class="hidden pt-4 border-t border-slate-800 mt-4 space-y-1.5">
+          <span class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-2">Admin Panel</span>
+          <button onclick="switchTab('admin')" id="nav-admin" class="nav-item w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-all hover:bg-slate-800 hover:text-slate-200">
+            <i data-lucide="shield-check" class="h-4 w-4"></i> System Incidents
+          </button>
+        </div>
+      </nav>
+
+      <!-- Sidebar Footer / Logout -->
+      <div class="p-4 border-t border-slate-800 bg-slate-950/40">
+        <button onclick="handleLogout()" class="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium text-rose-400 rounded-lg hover:bg-rose-950/20 hover:text-rose-300 transition-all">
+          <i data-lucide="log-out" class="h-4 w-4"></i> Logout Account
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 flex flex-col min-w-0 overflow-y-auto">
+      
+      <!-- Top header bar -->
+      <header class="h-16 border-b border-slate-200 bg-white flex items-center justify-between px-6 shrink-0 shadow-sm">
+        <div class="flex items-center gap-2">
+          <h2 id="pageTitle" class="text-xl font-bold text-slate-800">Dashboard Overview</h2>
+        </div>
+        <div class="flex items-center gap-3">
+          <span id="demoActiveUser" class="text-xs bg-slate-100 text-slate-700 px-3 py-1.5 rounded-full font-medium border border-slate-200">Retrieving active profile...</span>
+        </div>
+      </header>
+
+      <!-- Content wrapper -->
+      <div class="flex-1 p-6 space-y-6">
+
+        <!-- ========================================== -->
+        <!-- TAB: HOME -->
+        <!-- ========================================== -->
+        <div id="tab-home" class="tab-content space-y-6">
+          
+          <!-- Banner -->
+          <div class="bg-gradient-to-r from-indigo-600 via-indigo-700 to-violet-700 rounded-2xl p-6 text-white shadow-lg relative overflow-hidden">
+            <div class="absolute right-0 bottom-0 opacity-10 pointer-events-none transform translate-y-8 translate-x-8">
+              <i data-lucide="car" class="w-64 h-64"></i>
+            </div>
+            <h1 class="text-3xl font-extrabold tracking-tight">Welcome Back, <span id="homeWelcomeName">User</span>!</h1>
+            <p class="mt-2 text-indigo-100 max-w-xl">Find open corporate pooling rides, share your vehicle to earn wallet credits, and stay safe with OSRM GPS tracking.</p>
+          </div>
+
+          <!-- Quick Stats Grid -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4">
+              <div class="p-3.5 bg-indigo-50 rounded-xl text-indigo-600"><i data-lucide="calendar" class="h-6 w-6"></i></div>
+              <div>
+                <span class="text-xs text-slate-400 uppercase tracking-wider block font-semibold">Active Booking</span>
+                <span id="homeStatBooking" class="text-lg font-bold text-slate-800 mt-0.5">None</span>
+              </div>
+            </div>
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4">
+              <div class="p-3.5 bg-emerald-50 rounded-xl text-emerald-600"><i data-lucide="award" class="h-6 w-6"></i></div>
+              <div>
+                <span class="text-xs text-slate-400 uppercase tracking-wider block font-semibold">Verified Vehicles</span>
+                <span id="homeStatVehicles" class="text-lg font-bold text-slate-800 mt-0.5">0 registered</span>
+              </div>
+            </div>
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4">
+              <div class="p-3.5 bg-violet-50 rounded-xl text-violet-600"><i data-lucide="plus-circle" class="h-6 w-6"></i></div>
+              <div>
+                <span class="text-xs text-slate-400 uppercase tracking-wider block font-semibold">Offered Rides</span>
+                <span id="homeStatOffers" class="text-lg font-bold text-slate-800 mt-0.5">0 offered</span>
+              </div>
+            </div>
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4">
+              <div class="p-3.5 bg-amber-50 rounded-xl text-amber-600"><i data-lucide="wallet" class="h-6 w-6"></i></div>
+              <div>
+                <span class="text-xs text-slate-400 uppercase tracking-wider block font-semibold">Wallet Wallet</span>
+                <span id="homeStatWallet" class="text-lg font-bold text-slate-800 mt-0.5">₹0.00</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Active Journey Notification / Warning Box -->
+          <div id="homeActiveRideBox" class="hidden bg-emerald-50 border border-emerald-200 rounded-2xl p-5 shadow-sm">
+            <div class="flex items-start gap-4">
+              <div class="p-3 bg-emerald-100 rounded-xl text-emerald-600 shrink-0"><i data-lucide="navigation" class="h-5 w-5 animate-pulse"></i></div>
+              <div class="flex-1">
+                <h3 class="font-bold text-emerald-950 text-base">Active Journey Ongoing!</h3>
+                <p class="text-sm text-emerald-800 mt-1">You are currently assigned to an active ride session. Open the Bookings & Offers page to track coordinates movement on the Leaflet map.</p>
+                <button onclick="switchTab('bookings')" class="mt-3 bg-emerald-600 text-white font-semibold text-xs px-4 py-2 rounded-lg hover:bg-emerald-700 transition-all">Track Commute on Map</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Action Buttons -->
+          <div class="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
+            <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2"><i data-lucide="compass" class="h-5 w-5 text-indigo-500"></i> Commuter Quick Actions</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+              <button onclick="switchTab('find-ride')" class="flex flex-col items-center justify-center p-6 border border-slate-200 rounded-xl hover:border-indigo-500 hover:shadow-md transition-all text-center group">
+                <i data-lucide="search" class="h-8 w-8 text-indigo-500 mb-2 group-hover:scale-110 transition-transform"></i>
+                <span class="font-bold text-sm text-slate-800">Search Commutes</span>
+                <span class="text-xs text-slate-400 mt-1">Book pooled seats to work</span>
+              </button>
+              <button onclick="switchTab('offer-ride')" class="flex flex-col items-center justify-center p-6 border border-slate-200 rounded-xl hover:border-indigo-500 hover:shadow-md transition-all text-center group">
+                <i data-lucide="plus-circle" class="h-8 w-8 text-indigo-500 mb-2 group-hover:scale-110 transition-transform"></i>
+                <span class="font-bold text-sm text-slate-800">Offer Ride Share</span>
+                <span class="text-xs text-slate-400 mt-1">Share seats and verify vehicles</span>
+              </button>
+              <button onclick="switchTab('profile')" class="flex flex-col items-center justify-center p-6 border border-slate-200 rounded-xl hover:border-indigo-500 hover:shadow-md transition-all text-center group">
+                <i data-lucide="user" class="h-8 w-8 text-indigo-500 mb-2 group-hover:scale-110 transition-transform"></i>
+                <span class="font-bold text-sm text-slate-800">Complete Profile</span>
+                <span class="text-xs text-slate-400 mt-1">Setup department & designation</span>
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB: PROFILE -->
+        <!-- ========================================== -->
+        <div id="tab-profile" class="tab-content space-y-6 hidden">
+          <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+            
+            <!-- Card Header bg -->
+            <div class="h-32 bg-gradient-to-r from-indigo-500 to-violet-600"></div>
+
+            <div class="px-6 pb-6 relative">
+              
+              <!-- Avatar Positioned -->
+              <div class="absolute -top-12 left-6">
+                <div class="relative group">
+                  <img id="profileCardAvatar" src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=128&h=128&fit=crop&crop=faces" class="h-24 w-24 rounded-full border-4 border-white shadow-md bg-white object-cover" alt="Avatar">
+                </div>
+              </div>
+
+              <!-- Content Spacer -->
+              <div class="h-16"></div>
+
+              <div class="border-b border-slate-100 pb-5">
+                <h2 id="profileCardName" class="text-2xl font-bold text-slate-800">Bob Employee</h2>
+                <p id="profileCardRole" class="text-sm text-slate-400 font-medium">EMPLOYEE</p>
+              </div>
+
+              <!-- Profile Form -->
+              <form id="profileForm" class="mt-6 space-y-5" onsubmit="handleProfileUpdate(event)">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div>
+                    <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider">Department</label>
+                    <input id="profileDept" type="text" placeholder="e.g. Engineering" class="mt-1 block w-full rounded-lg border-slate-200 border bg-slate-50/50 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2.5">
+                  </div>
+                  <div>
+                    <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider">Designation</label>
+                    <input id="profileDesignation" type="text" placeholder="e.g. Senior Developer" class="mt-1 block w-full rounded-lg border-slate-200 border bg-slate-50/50 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2.5">
+                  </div>
+                  <div>
+                    <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider">Emergency Contact</label>
+                    <input id="profileEmergency" type="text" placeholder="e.g. +91 9999999999" class="mt-1 block w-full rounded-lg border-slate-200 border bg-slate-50/50 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2.5">
+                  </div>
+                  <div>
+                    <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider">Work Shift</label>
+                    <input id="profileShift" type="text" placeholder="e.g. 09:00 AM - 06:00 PM" class="mt-1 block w-full rounded-lg border-slate-200 border bg-slate-50/50 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2.5">
+                  </div>
+                  <div class="md:col-span-2">
+                    <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider">Home Address</label>
+                    <textarea id="profileAddress" rows="2" placeholder="Enter complete residential address..." class="mt-1 block w-full rounded-lg border-slate-200 border bg-slate-50/50 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2.5"></textarea>
+                  </div>
+                  <div class="md:col-span-2">
+                    <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider">Profile Photo URL</label>
+                    <div class="mt-1 flex gap-3">
+                      <input id="profilePhotoUrl" type="text" placeholder="Enter image URL or choose file below to upload..." class="block w-full rounded-lg border-slate-200 border bg-slate-50/50 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2.5">
+                    </div>
+                  </div>
+                </div>
+
+                <div class="flex justify-end pt-4 border-t border-slate-100">
+                  <button type="submit" class="bg-indigo-600 text-white font-semibold text-sm px-6 py-2.5 rounded-lg hover:bg-indigo-700 shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5">
+                    Save Profile Settings
+                  </button>
+                </div>
+              </form>
+
+              <!-- Image Uploader widget inside Profile -->
+              <div class="mt-6 bg-slate-50 border border-slate-200 rounded-xl p-4">
+                <h4 class="font-bold text-sm text-slate-800 mb-2">Upload Profile Photo</h4>
+                <div class="flex flex-col sm:flex-row gap-3 items-center">
+                  <input type="file" id="profileFile" accept="image/*" class="text-sm file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+                  <button onclick="uploadImage('profile')" class="bg-slate-200 text-slate-700 font-semibold text-xs px-4 py-2 rounded-md hover:bg-slate-300 transition-all">Upload Photo</button>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB: VEHICLES -->
+        <!-- ========================================== -->
+        <div id="tab-vehicles" class="tab-content space-y-6 hidden">
+          <div class="flex items-center justify-between">
+            <h3 class="text-lg font-bold text-slate-800">My Registered Commute Vehicles</h3>
+            <button onclick="openModal('vehicleModal')" class="bg-indigo-600 text-white font-semibold text-sm px-4 py-2 rounded-lg hover:bg-indigo-700 shadow-md transition-all flex items-center gap-1.5">
+              <i data-lucide="plus-circle" class="h-4 w-4"></i> Add Vehicle
+            </button>
+          </div>
+
+          <!-- Vehicles List Grid -->
+          <div id="vehiclesList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Rendered Vehicles -->
+          </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB: OFFER RIDE -->
+        <!-- ========================================== -->
+        <div id="tab-offer-ride" class="tab-content space-y-6 hidden">
+          <div class="bg-white border border-slate-100 shadow-sm rounded-2xl p-6">
+            <h3 class="text-lg font-bold text-slate-800 mb-4">Create Commute Ride Pool</h3>
+            
+            <form id="offerRideForm" class="space-y-5" onsubmit="handleOfferRide(event)">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div>
+                  <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider">Select Vehicle</label>
+                  <select id="offerVehicleId" required class="mt-1 block w-full rounded-lg border-slate-200 border bg-slate-50/50 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2.5">
+                    <option value="">Choose a vehicle...</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider">Seating Capacity to Offer</label>
+                  <input id="offerSeats" type="number" min="1" max="8" value="3" required class="mt-1 block w-full rounded-lg border-slate-200 border bg-slate-50/50 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2.5">
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider">Pickup Date</label>
+                  <input id="offerDate" type="date" required class="mt-1 block w-full rounded-lg border-slate-200 border bg-slate-50/50 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2.5">
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider">Pickup Time</label>
+                  <input id="offerTime" type="time" required class="mt-1 block w-full rounded-lg border-slate-200 border bg-slate-50/50 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2.5">
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider">Fare Price Per Seat (₹)</label>
+                  <input id="offerPrice" type="number" step="0.5" value="15" required class="mt-1 block w-full rounded-lg border-slate-200 border bg-slate-50/50 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2.5">
+                </div>
+                <div class="flex items-center pt-5">
+                  <input id="offerFemaleOnly" type="checkbox" class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                  <label for="offerFemaleOnly" class="ml-2 text-sm text-slate-600 font-semibold uppercase tracking-wide text-xs">Female Passenger Only</label>
+                </div>
+
+                <div class="md:col-span-2 border-t border-slate-100 pt-4">
+                  <h4 class="text-sm font-bold text-slate-800 mb-2">Route Details (OSRM coordinates)</h4>
+                </div>
+
+                <div class="relative">
+                  <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider">Source (Address)</label>
+                  <input id="offerSrcAddress" type="text" autocomplete="off" placeholder="Start typing to search..." required class="mt-1 block w-full rounded-lg border-slate-200 border bg-slate-50/50 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2.5">
+                  <div id="offerSrcAutocomplete" class="absolute z-[100] w-full bg-white shadow-lg rounded-b-lg border border-slate-200 max-h-48 overflow-y-auto hidden"></div>
+                  <input id="offerSrcLat" type="hidden" required>
+                  <input id="offerSrcLng" type="hidden" required>
+                </div>
+
+                <div class="relative">
+                  <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider">Destination (Address)</label>
+                  <input id="offerDestAddress" type="text" autocomplete="off" placeholder="Start typing to search..." required class="mt-1 block w-full rounded-lg border-slate-200 border bg-slate-50/50 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2.5">
+                  <div id="offerDestAutocomplete" class="absolute z-[100] w-full bg-white shadow-lg rounded-b-lg border border-slate-200 max-h-48 overflow-y-auto hidden"></div>
+                  <input id="offerDestLat" type="hidden" required>
+                  <input id="offerDestLng" type="hidden" required>
+                </div>
+
+                <div class="md:col-span-2">
+                  <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider">Driver Notes</label>
+                  <textarea id="offerNotes" rows="2" placeholder="e.g. Carrying maximum 1 luggage. Strict pickup timing." class="mt-1 block w-full rounded-lg border-slate-200 border bg-slate-50/50 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2.5"></textarea>
+                </div>
+              </div>
+
+              <div class="flex flex-col items-end pt-4 border-t border-slate-100">
+                <p id="offerRideErrorMsg" class="text-xs text-rose-500 font-bold mb-2">Please select a valid location from the suggestions.</p>
+                <button id="offerRideSubmitBtn" type="submit" disabled class="bg-indigo-600 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-semibold text-sm px-6 py-2.5 rounded-lg hover:bg-indigo-700 shadow-md transition-all">
+                  Publish Ride Share
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB: FIND RIDE -->
+        <!-- ========================================== -->
+        <div id="tab-find-ride" class="tab-content space-y-6 hidden">
+          <div class="bg-white border border-slate-100 shadow-sm rounded-2xl p-5 flex flex-col gap-4">
+            
+            <!-- Filters Row 1: Search Inputs -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Source Keyword</label>
+                <div class="mt-1 relative">
+                  <span class="absolute inset-y-0 left-0 pl-2.5 flex items-center text-slate-400"><i data-lucide="map-pin" class="h-3.5 w-3.5"></i></span>
+                  <input id="searchSrc" type="text" placeholder="e.g. Acme" onkeyup="handleSearchRides()" class="block w-full pl-8 rounded-lg border-slate-200 border p-2 text-sm focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Destination Keyword</label>
+                <div class="mt-1 relative">
+                  <span class="absolute inset-y-0 left-0 pl-2.5 flex items-center text-slate-400"><i data-lucide="map-pin" class="h-3.5 w-3.5"></i></span>
+                  <input id="searchDest" type="text" placeholder="e.g. Station" onkeyup="handleSearchRides()" class="block w-full pl-8 rounded-lg border-slate-200 border p-2 text-sm focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Pickup Date</label>
+                <input id="searchDate" type="date" onchange="handleSearchRides()" class="mt-1 block w-full rounded-lg border-slate-200 border p-2 text-sm focus:ring-indigo-500 focus:border-indigo-500">
+              </div>
+            </div>
+
+            <!-- Filters Row 2: Selects & Toggles -->
+            <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 items-end">
+              <div>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Min Seats</label>
+                <select id="searchSeats" onchange="handleSearchRides()" class="mt-1 block w-full rounded-lg border-slate-200 border p-2 text-sm focus:ring-indigo-500 focus:border-indigo-500">
+                  <option value="">Any</option>
+                  <option value="1">1+ Seats</option>
+                  <option value="2">2+ Seats</option>
+                  <option value="3">3+ Seats</option>
+                  <option value="4">4+ Seats</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Sort By</label>
+                <select id="searchSort" onchange="handleSearchRides()" class="mt-1 block w-full rounded-lg border-slate-200 border p-2 text-sm focus:ring-indigo-500 focus:border-indigo-500">
+                  <option value="earliest">Earliest Departure</option>
+                  <option value="latest">Latest Departure</option>
+                  <option value="lowest">Lowest Fare</option>
+                  <option value="highest">Highest Fare</option>
+                </select>
+              </div>
+              <div class="flex items-center h-full pb-2">
+                <input id="searchFemaleOnly" type="checkbox" onchange="handleSearchRides()" class="h-4 w-4 text-rose-500 focus:ring-rose-500 border-gray-300 rounded cursor-pointer">
+                <label for="searchFemaleOnly" class="ml-2 block text-xs font-bold text-slate-600 cursor-pointer">Female Only</label>
+              </div>
+              <div class="flex justify-end h-full">
+                <button onclick="resetSearchFilters()" class="text-slate-500 hover:text-indigo-600 font-bold text-xs px-4 py-2 flex items-center gap-1 transition-all h-full pb-2">
+                  <i data-lucide="rotate-ccw" class="h-3.5 w-3.5"></i> Reset
+                </button>
+              </div>
+            </div>
+            
+          </div>
+
+          <!-- Search Results List -->
+          <div id="searchResultsList" class="space-y-4">
+            <!-- Results rendered -->
+          </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB: BOOKINGS & ACTIVE TRACKING -->
+        <!-- ========================================== -->
+        <div id="tab-bookings" class="tab-content space-y-6 hidden">
+          
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <!-- Left Side: Lists of Passenger Bookings and Driver Offers -->
+            <div class="lg:col-span-1 space-y-6">
+              
+              <!-- Passenger Commutes list -->
+              <div class="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm">
+                <h3 class="font-bold text-slate-800 border-b border-slate-100 pb-3 mb-3 flex items-center gap-2"><i data-lucide="user" class="h-4.5 w-4.5 text-indigo-500"></i> Passenger Bookings</h3>
+                <div id="passengerBookingsList" class="space-y-3 max-height-[300px] overflow-y-auto">
+                  <span class="text-xs text-slate-400">Fetching passenger bookings...</span>
+                </div>
+              </div>
+
+              <!-- Driver Commutes List (Offered Rides List + Requests Panel) -->
+              <div class="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm">
+                <h3 class="font-bold text-slate-800 border-b border-slate-100 pb-3 mb-3 flex items-center gap-2"><i data-lucide="award" class="h-4.5 w-4.5 text-indigo-500"></i> Driver Offered Pools</h3>
+                <div id="driverOffersList" class="space-y-3 max-height-[300px] overflow-y-auto">
+                  <span class="text-xs text-slate-400">Fetching offered pools...</span>
+                </div>
+
+                <!-- Driver Booking Requests alerts -->
+                <h4 class="font-bold text-xs text-slate-500 uppercase tracking-wider border-t border-slate-100 pt-3 mt-4 mb-2">Pending Seating Requests</h4>
+                <div id="incomingRequestsContainer" class="space-y-2">
+                  <span class="text-xs text-slate-400">No incoming ride requests.</span>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Right Side: Live Tracking Map Container (HIGHEST PRIORITY) -->
+            <div class="lg:col-span-2 space-y-6">
+              
+              <div class="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm space-y-4">
+                
+                <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-2">
+                  <div>
+                    <h3 class="font-extrabold text-slate-800 text-lg flex items-center gap-2">
+                      <i data-lucide="map-pin" class="h-5 w-5 text-indigo-600"></i> OSRM Real-Time Tracking Map
+                    </h3>
+                    <p class="text-xs text-slate-400 mt-0.5">Live coordinate interpolation synchronized using Socket.IO</p>
+                  </div>
+                  <!-- Ride Control buttons -->
+                  <div id="demoControlsSection" class="flex gap-2">
+                    <button id="payRideBtn" onclick="payActiveBooking()" class="hidden bg-emerald-600 text-white font-bold text-xs px-4 py-2 rounded-lg hover:bg-emerald-700 transition-all"></button>
+                    <button id="startRideBtn" onclick="startActiveRide()" class="hidden bg-indigo-600 text-white font-bold text-xs px-4 py-2 rounded-lg hover:bg-indigo-700 transition-all">Start Journey</button>
+                    <button id="completeRideBtn" onclick="completeActiveRide()" class="hidden bg-rose-600 text-white font-bold text-xs px-4 py-2 rounded-lg hover:bg-rose-700 transition-all">Complete Journey</button>
+                  </div>
+                </div>
+
+                <!-- Map Box -->
+                <div id="map" class="h-[380px] w-full rounded-xl border border-slate-200 z-10">Map Loading...</div>
+
+                <!-- Live Route ETA Panel -->
+                <div id="trackingInfo" class="hidden grid grid-cols-2 sm:grid-cols-4 gap-4 bg-slate-50 border border-slate-200 rounded-xl p-4 text-center">
+                  <div>
+                    <span class="text-[10px] font-bold text-slate-400 uppercase block">Commuter Status</span>
+                    <span id="rideLifecycleStatus" class="font-extrabold text-indigo-600 text-sm">SCHEDULED</span>
+                  </div>
+                  <div>
+                    <span class="text-[10px] font-bold text-slate-400 uppercase block">Distance Left</span>
+                    <span id="mapDistanceText" class="font-extrabold text-slate-700 text-sm">Calculating...</span>
+                  </div>
+                  <div>
+                    <span class="text-[10px] font-bold text-slate-400 uppercase block">Estimated Duration</span>
+                    <span id="mapDurationText" class="font-extrabold text-slate-700 text-sm">Calculating...</span>
+                  </div>
+                  <div>
+                    <span class="text-[10px] font-bold text-slate-400 uppercase block">Driver Coords</span>
+                    <span class="font-mono text-slate-600 text-[11px] block mt-0.5"><span id="currentLat">0.00</span>, <span id="currentLng">0.00</span></span>
+                  </div>
+                  <!-- GPS simulated updates warning flag -->
+                  <div id="simulText" class="hidden col-span-2 sm:col-span-4 mt-2 bg-emerald-100 text-emerald-800 text-xs font-bold py-1.5 rounded-lg animate-pulse">
+                    🟢 Live GPS Coordinates Relay Emitting along streets...
+                  </div>
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB: WALLET -->
+        <!-- ========================================== -->
+        <div id="tab-wallet" class="tab-content space-y-6 hidden">
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <!-- Left Side: Wallet Card & Recharge -->
+            <div class="lg:col-span-1 space-y-6">
+              <!-- Animated Wallet Card -->
+              <div class="relative overflow-hidden bg-gradient-to-br from-indigo-900 via-indigo-700 to-violet-800 rounded-3xl p-7 shadow-xl shadow-indigo-900/20 text-white transform transition-transform hover:scale-[1.02]">
+                <div class="absolute top-0 right-0 -mr-16 -mt-16 w-48 h-48 rounded-full bg-white/10 blur-2xl"></div>
+                <div class="absolute bottom-0 left-0 -ml-16 -mb-16 w-32 h-32 rounded-full bg-white/10 blur-2xl"></div>
+                <div class="relative z-10 flex justify-between items-start mb-8">
+                  <div>
+                    <p class="text-indigo-200 text-xs font-medium uppercase tracking-wider mb-1">Available Balance</p>
+                    <h3 class="text-4xl font-black tracking-tight flex items-baseline">
+                      <span class="text-xl mr-1">₹</span><span id="walletBalanceDisplay">0.00</span>
+                    </h3>
+                  </div>
+                  <div class="bg-white/20 p-2 rounded-xl backdrop-blur-md">
+                    <i data-lucide="credit-card" class="h-6 w-6 text-white"></i>
+                  </div>
+                </div>
+                
+                <div class="relative z-10 flex items-center justify-between">
+                  <div>
+                    <p class="text-indigo-200 text-[10px] uppercase tracking-wider mb-0.5">Card Holder</p>
+                    <p id="walletCardHolder" class="text-sm font-semibold tracking-wide">Corporate User</p>
+                  </div>
+                  <div class="text-right">
+                    <p class="text-indigo-200 text-[10px] uppercase tracking-wider mb-0.5">Network</p>
+                    <p class="text-sm font-bold italic tracking-wider">ORGRIDE PAY</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Recharge Section -->
+              <div class="bg-white border border-slate-100 rounded-2xl p-6 shadow-sm">
+                <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2">
+                  <i data-lucide="zap" class="h-5 w-5 text-amber-500"></i> Quick Recharge
+                </h3>
+                <div class="grid grid-cols-2 gap-3 mb-4">
+                  <button onclick="setRechargeAmount(100)" class="bg-slate-50 border border-slate-200 hover:border-indigo-400 hover:bg-indigo-50 text-slate-700 font-semibold py-2 rounded-xl transition-all">₹100</button>
+                  <button onclick="setRechargeAmount(250)" class="bg-slate-50 border border-slate-200 hover:border-indigo-400 hover:bg-indigo-50 text-slate-700 font-semibold py-2 rounded-xl transition-all">₹250</button>
+                  <button onclick="setRechargeAmount(500)" class="bg-slate-50 border border-slate-200 hover:border-indigo-400 hover:bg-indigo-50 text-slate-700 font-semibold py-2 rounded-xl transition-all">₹500</button>
+                  <button onclick="setRechargeAmount(1000)" class="bg-slate-50 border border-slate-200 hover:border-indigo-400 hover:bg-indigo-50 text-slate-700 font-semibold py-2 rounded-xl transition-all">₹1000</button>
+                </div>
+                <div class="relative mb-4">
+                  <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <span class="text-slate-500 sm:text-sm font-semibold">₹</span>
+                  </div>
+                  <input type="number" id="customRechargeAmount" placeholder="Enter custom amount" class="pl-7 block w-full rounded-xl border-slate-200 border bg-slate-50/50 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-3">
+                </div>
+                <button onclick="processRecharge()" class="w-full bg-indigo-600 text-white font-bold py-3 rounded-xl hover:bg-indigo-700 transition-all flex justify-center items-center gap-2 shadow-md">
+                  <i data-lucide="arrow-right-circle" class="h-5 w-5"></i> Add Money
+                </button>
+              </div>
+            </div>
+
+            <!-- Right Side: Statistics & Transactions -->
+            <div class="lg:col-span-2 space-y-6">
+              
+              <!-- Stats Row -->
+              <div class="grid grid-cols-2 gap-4">
+                <div class="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm flex items-center gap-4">
+                  <div class="bg-emerald-100 p-3 rounded-xl">
+                    <i data-lucide="trending-up" class="h-6 w-6 text-emerald-600"></i>
+                  </div>
+                  <div>
+                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Total Earnings</p>
+                    <h4 class="text-xl font-black text-slate-800">₹<span id="walletTotalEarnings">0.00</span></h4>
+                  </div>
+                </div>
+                <div class="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm flex items-center gap-4">
+                  <div class="bg-rose-100 p-3 rounded-xl">
+                    <i data-lucide="shopping-bag" class="h-6 w-6 text-rose-600"></i>
+                  </div>
+                  <div>
+                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Total Spent</p>
+                    <h4 class="text-xl font-black text-slate-800">₹<span id="walletTotalSpent">0.00</span></h4>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Transactions History -->
+              <div class="bg-white border border-slate-100 rounded-2xl p-6 shadow-sm h-[400px] flex flex-col">
+                <h3 class="font-bold text-slate-800 mb-4 flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <i data-lucide="history" class="h-5 w-5 text-indigo-500"></i> Recent Transactions
+                  </div>
+                  <button onclick="fetchWalletTransactions()" class="text-indigo-600 hover:text-indigo-800 text-sm">
+                    <i data-lucide="refresh-cw" class="h-4 w-4"></i>
+                  </button>
+                </h3>
+                <div id="walletTransactionsList" class="flex-1 overflow-y-auto pr-2 space-y-3">
+                  <div class="flex items-center justify-center h-full">
+                    <span class="text-sm text-slate-400">Loading transactions...</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+          </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB: REPORTS -->
+        <!-- ========================================== -->
+        <div id="tab-reports" class="tab-content space-y-6 hidden">
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <!-- File report form -->
+            <div class="lg:col-span-1 bg-white border border-slate-100 rounded-2xl p-5 shadow-sm">
+              <h3 class="font-bold text-rose-600 mb-4 flex items-center gap-2"><i data-lucide="alert-octagon" class="h-5 w-5"></i> File Incident Report</h3>
+              
+              <form id="demoReportForm" onsubmit="submitDemoReport(event)" class="space-y-4">
+                <div>
+                  <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider">Incident Category</label>
+                  <select id="demoReportCategory" required class="mt-1 block w-full rounded-lg border-slate-200 border bg-slate-50/50 sm:text-sm p-2.5">
+                    <option value="DRIVER_LATE">Driver Arrived Late</option>
+                    <option value="PASSENGER_LATE">Passenger Late</option>
+                    <option value="VEHICLE">Vehicle Defect / Issue</option>
+                    <option value="PAYMENT">Payment Verification Issue</option>
+                    <option value="SAFETY">Safety Concern</option>
+                    <option value="OTHER">Other</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider">Reported Employee UUID</label>
+                  <input id="demoReportedUserId" type="text" placeholder="Copy driver/passenger ID here" required class="mt-1 block w-full rounded-lg border-slate-200 border bg-slate-50/50 sm:text-sm p-2.5">
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider">Description Details</label>
+                  <textarea id="demoReportDesc" rows="3" placeholder="Provide complete incident details..." required class="mt-1 block w-full rounded-lg border-slate-200 border bg-slate-50/50 sm:text-sm p-2.5"></textarea>
+                </div>
+
+                <button type="submit" class="bg-rose-600 text-white font-semibold text-xs px-4 py-2.5 rounded-lg hover:bg-rose-700 transition-all shadow-sm">
+                  File Incident Log
+                </button>
+              </form>
+            </div>
+
+            <!-- Incident History Logs list -->
+            <div class="lg:col-span-2 bg-white border border-slate-100 rounded-2xl p-5 shadow-sm">
+              <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2"><i data-lucide="clipboard-list" class="h-5 w-5 text-indigo-500"></i> My Reports History</h3>
+              <div id="demoMyReportsList" class="space-y-3">
+                <span class="text-xs text-slate-400">Loading reports history...</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB: ADMIN CONTROL (Verify reports) -->
+        <!-- ========================================== -->
+        <!-- ========================================== -->
+        <!-- TAB: ADMIN CONTROL (Enterprise Dashboard) -->
+        <!-- ========================================== -->
+        <div id="tab-admin" class="tab-content hidden flex flex-col h-full">
+          <!-- Admin Sub-Navigation -->
+          <div class="bg-white border-b border-slate-200 px-6 py-3 flex space-x-6 overflow-x-auto shrink-0 shadow-sm sticky top-0 z-20">
+            <button onclick="switchAdminTab('dashboard')" id="nav-admin-dashboard" class="admin-nav-item text-indigo-600 font-bold border-b-2 border-indigo-600 pb-1 whitespace-nowrap transition-all">Analytics</button>
+            <button onclick="switchAdminTab('vehicles')" id="nav-admin-vehicles" class="admin-nav-item text-slate-500 hover:text-slate-700 font-semibold pb-1 whitespace-nowrap transition-all">Vehicles</button>
+            <button onclick="switchAdminTab('employees')" id="nav-admin-employees" class="admin-nav-item text-slate-500 hover:text-slate-700 font-semibold pb-1 whitespace-nowrap transition-all">Employees</button>
+            <button onclick="switchAdminTab('rides')" id="nav-admin-rides" class="admin-nav-item text-slate-500 hover:text-slate-700 font-semibold pb-1 whitespace-nowrap transition-all">Rides</button>
+            <button onclick="switchAdminTab('bookings')" id="nav-admin-bookings" class="admin-nav-item text-slate-500 hover:text-slate-700 font-semibold pb-1 whitespace-nowrap transition-all">Bookings</button>
+            <button onclick="switchAdminTab('reports')" id="nav-admin-reports" class="admin-nav-item text-slate-500 hover:text-slate-700 font-semibold pb-1 whitespace-nowrap transition-all">Reports</button>
+          </div>
+
+          <div class="flex-1 overflow-y-auto p-6 space-y-6">
+            
+            <!-- ADMIN SUB: DASHBOARD -->
+            <div id="admin-sub-dashboard" class="admin-sub-tab space-y-6">
+              <div class="flex justify-between items-center">
+                <h2 class="text-2xl font-black text-slate-800 tracking-tight">Platform Analytics</h2>
+                <button onclick="fetchAdminStats()" class="bg-indigo-50 text-indigo-600 hover:bg-indigo-100 font-bold text-xs px-3 py-1.5 rounded-lg flex items-center gap-1 transition-all"><i data-lucide="refresh-cw" class="h-3 w-3"></i> Refresh</button>
+              </div>
+
+              <!-- Stat Cards Grid -->
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-2xl p-5 text-white shadow-lg relative overflow-hidden">
+                  <i data-lucide="users" class="absolute -right-4 -bottom-4 h-24 w-24 opacity-10"></i>
+                  <p class="text-indigo-100 text-xs font-bold uppercase tracking-wider mb-1">Total Employees</p>
+                  <h3 class="text-3xl font-black" id="stat-totalEmployees">-</h3>
+                  <div class="mt-2 text-[10px] bg-white/20 inline-block px-2 py-0.5 rounded backdrop-blur-sm"><span id="stat-activeEmployees">-</span> Active</div>
+                </div>
+
+                <div class="bg-gradient-to-br from-emerald-500 to-emerald-700 rounded-2xl p-5 text-white shadow-lg relative overflow-hidden">
+                  <i data-lucide="car" class="absolute -right-4 -bottom-4 h-24 w-24 opacity-10"></i>
+                  <p class="text-emerald-100 text-xs font-bold uppercase tracking-wider mb-1">Verified Vehicles</p>
+                  <h3 class="text-3xl font-black" id="stat-verifiedVehicles">-</h3>
+                  <div class="mt-2 text-[10px] bg-white/20 inline-block px-2 py-0.5 rounded backdrop-blur-sm"><span id="stat-pendingVehicles">-</span> Pending</div>
+                </div>
+
+                <div class="bg-gradient-to-br from-violet-500 to-violet-700 rounded-2xl p-5 text-white shadow-lg relative overflow-hidden">
+                  <i data-lucide="map" class="absolute -right-4 -bottom-4 h-24 w-24 opacity-10"></i>
+                  <p class="text-violet-100 text-xs font-bold uppercase tracking-wider mb-1">Total Rides</p>
+                  <h3 class="text-3xl font-black" id="stat-completedRides">-</h3>
+                  <div class="mt-2 text-[10px] bg-white/20 inline-block px-2 py-0.5 rounded backdrop-blur-sm"><span id="stat-activeRides">-</span> Active Now</div>
+                </div>
+
+                <div class="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-5 text-white shadow-lg relative overflow-hidden">
+                  <i data-lucide="wallet" class="absolute -right-4 -bottom-4 h-24 w-24 opacity-10"></i>
+                  <p class="text-slate-300 text-xs font-bold uppercase tracking-wider mb-1">Total Wallets Balance</p>
+                  <h3 class="text-3xl font-black flex items-baseline"><span class="text-xl mr-1">₹</span><span id="stat-totalWalletBalance">-</span></h3>
+                  <div class="mt-2 text-[10px] bg-white/20 inline-block px-2 py-0.5 rounded backdrop-blur-sm"><span id="stat-totalBookings">-</span> Total Bookings</div>
+                </div>
+              </div>
+
+              <!-- Reports Quick View -->
+              <div class="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm">
+                 <h3 class="font-bold text-slate-800 mb-4 flex items-center justify-between">
+                   <div class="flex items-center gap-2">
+                     <i data-lucide="shield-alert" class="h-5 w-5 text-amber-500"></i> Incident Reports Summary
+                   </div>
+                   <button onclick="switchAdminTab('reports')" class="text-indigo-600 font-semibold text-xs hover:underline">View All</button>
+                 </h3>
+                 <div class="grid grid-cols-2 gap-4">
+                   <div class="bg-amber-50 border border-amber-100 p-4 rounded-xl flex items-center justify-between">
+                     <span class="text-amber-800 font-semibold">Open / Reviewing</span>
+                     <span class="text-2xl font-black text-amber-600" id="stat-openReports">-</span>
+                   </div>
+                   <div class="bg-emerald-50 border border-emerald-100 p-4 rounded-xl flex items-center justify-between">
+                     <span class="text-emerald-800 font-semibold">Resolved</span>
+                     <span class="text-2xl font-black text-emerald-600" id="stat-resolvedReports">-</span>
+                   </div>
+                 </div>
+              </div>
+            </div>
+
+            <!-- ADMIN SUB: VEHICLES -->
+            <div id="admin-sub-vehicles" class="admin-sub-tab hidden space-y-4">
+              <div class="flex justify-between items-center mb-2">
+                <h2 class="text-xl font-bold text-slate-800">Vehicle Approvals</h2>
+                <button onclick="fetchAdminVehicles()" class="bg-indigo-50 text-indigo-600 hover:bg-indigo-100 font-bold text-xs px-3 py-1.5 rounded-lg flex items-center gap-1 transition-all"><i data-lucide="refresh-cw" class="h-3 w-3"></i> Refresh</button>
+              </div>
+              <div class="bg-white border border-slate-100 rounded-2xl shadow-sm overflow-hidden">
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left border-collapse">
+                    <thead>
+                      <tr class="bg-slate-50 text-slate-500 text-[10px] uppercase tracking-wider">
+                        <th class="p-4 font-bold border-b border-slate-100">Vehicle</th>
+                        <th class="p-4 font-bold border-b border-slate-100">Owner</th>
+                        <th class="p-4 font-bold border-b border-slate-100">Details</th>
+                        <th class="p-4 font-bold border-b border-slate-100">Documents</th>
+                        <th class="p-4 font-bold border-b border-slate-100">Status</th>
+                        <th class="p-4 font-bold border-b border-slate-100 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody id="adminVehiclesList" class="divide-y divide-slate-100">
+                      <tr><td colspan="6" class="p-8 text-center text-slate-400 text-sm">Loading vehicles...</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <!-- ADMIN SUB: EMPLOYEES -->
+            <div id="admin-sub-employees" class="admin-sub-tab hidden space-y-4">
+              <div class="flex justify-between items-center mb-2">
+                <h2 class="text-xl font-bold text-slate-800">Employee Management</h2>
+                <button onclick="fetchAdminEmployees()" class="bg-indigo-50 text-indigo-600 hover:bg-indigo-100 font-bold text-xs px-3 py-1.5 rounded-lg flex items-center gap-1 transition-all"><i data-lucide="refresh-cw" class="h-3 w-3"></i> Refresh</button>
+              </div>
+              <div class="bg-white border border-slate-100 rounded-2xl shadow-sm overflow-hidden">
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left border-collapse">
+                    <thead>
+                      <tr class="bg-slate-50 text-slate-500 text-[10px] uppercase tracking-wider">
+                        <th class="p-4 font-bold border-b border-slate-100">Employee</th>
+                        <th class="p-4 font-bold border-b border-slate-100">Dept & Role</th>
+                        <th class="p-4 font-bold border-b border-slate-100">Activity (V/R/B)</th>
+                        <th class="p-4 font-bold border-b border-slate-100">Status</th>
+                        <th class="p-4 font-bold border-b border-slate-100 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody id="adminEmployeesList" class="divide-y divide-slate-100">
+                      <tr><td colspan="5" class="p-8 text-center text-slate-400 text-sm">Loading employees...</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <!-- ADMIN SUB: RIDES -->
+            <div id="admin-sub-rides" class="admin-sub-tab hidden space-y-4">
+              <div class="flex justify-between items-center mb-2">
+                <h2 class="text-xl font-bold text-slate-800">Platform Rides</h2>
+                <button onclick="fetchAdminRides()" class="bg-indigo-50 text-indigo-600 hover:bg-indigo-100 font-bold text-xs px-3 py-1.5 rounded-lg flex items-center gap-1 transition-all"><i data-lucide="refresh-cw" class="h-3 w-3"></i> Refresh</button>
+              </div>
+              <div class="bg-white border border-slate-100 rounded-2xl shadow-sm overflow-hidden">
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left border-collapse">
+                    <thead>
+                      <tr class="bg-slate-50 text-slate-500 text-[10px] uppercase tracking-wider">
+                        <th class="p-4 font-bold border-b border-slate-100">Ride Code</th>
+                        <th class="p-4 font-bold border-b border-slate-100">Driver & Vehicle</th>
+                        <th class="p-4 font-bold border-b border-slate-100">Route</th>
+                        <th class="p-4 font-bold border-b border-slate-100">Seats & Fare</th>
+                        <th class="p-4 font-bold border-b border-slate-100">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody id="adminRidesList" class="divide-y divide-slate-100">
+                      <tr><td colspan="5" class="p-8 text-center text-slate-400 text-sm">Loading rides...</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <!-- ADMIN SUB: BOOKINGS -->
+            <div id="admin-sub-bookings" class="admin-sub-tab hidden space-y-4">
+              <div class="flex justify-between items-center mb-2">
+                <h2 class="text-xl font-bold text-slate-800">Platform Bookings</h2>
+                <button onclick="fetchAdminBookings()" class="bg-indigo-50 text-indigo-600 hover:bg-indigo-100 font-bold text-xs px-3 py-1.5 rounded-lg flex items-center gap-1 transition-all"><i data-lucide="refresh-cw" class="h-3 w-3"></i> Refresh</button>
+              </div>
+              <div class="bg-white border border-slate-100 rounded-2xl shadow-sm overflow-hidden">
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left border-collapse">
+                    <thead>
+                      <tr class="bg-slate-50 text-slate-500 text-[10px] uppercase tracking-wider">
+                        <th class="p-4 font-bold border-b border-slate-100">Date</th>
+                        <th class="p-4 font-bold border-b border-slate-100">Passenger</th>
+                        <th class="p-4 font-bold border-b border-slate-100">Ride & Driver</th>
+                        <th class="p-4 font-bold border-b border-slate-100">Seats</th>
+                        <th class="p-4 font-bold border-b border-slate-100">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody id="adminBookingsList" class="divide-y divide-slate-100">
+                      <tr><td colspan="5" class="p-8 text-center text-slate-400 text-sm">Loading bookings...</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <!-- ADMIN SUB: REPORTS -->
+            <div id="admin-sub-reports" class="admin-sub-tab hidden space-y-6">
+              <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                  <h2 class="text-2xl font-black text-slate-800 tracking-tight">Incident Reports</h2>
+                  <p class="text-sm text-slate-500 mt-1">Manage and resolve user reported issues.</p>
+                </div>
+                <div class="flex items-center gap-3 w-full md:w-auto">
+                  <div class="relative flex-1 md:w-64">
+                    <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400"></i>
+                    <input type="text" id="reportSearch" onkeyup="filterAdminReports()" placeholder="Search reports..." class="w-full pl-9 pr-4 py-2 bg-white/60 backdrop-blur border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all">
+                  </div>
+                  <select id="reportFilterStatus" onchange="filterAdminReports()" class="bg-white/60 backdrop-blur border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all cursor-pointer">
+                    <option value="ALL">All Status</option>
+                    <option value="PENDING">Pending</option>
+                    <option value="REVIEWING">Reviewing</option>
+                    <option value="RESOLVED">Resolved</option>
+                  </select>
+                  <button onclick="fetchAdminReports()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm px-4 py-2 rounded-xl flex items-center gap-2 transition-all shadow-lg shadow-indigo-200 hover:shadow-indigo-300 transform hover:-translate-y-0.5">
+                    <i data-lucide="refresh-cw" class="h-4 w-4"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Reports Table -->
+              <div class="bg-white/60 backdrop-blur-xl border border-white/40 rounded-3xl overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left border-collapse">
+                    <thead>
+                      <tr class="bg-slate-50/50 backdrop-blur-sm border-b border-slate-100/50">
+                        <th class="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap">Report Details</th>
+                        <th class="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap">Reporter</th>
+                        <th class="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap">Category</th>
+                        <th class="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap">Status</th>
+                        <th class="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider text-right whitespace-nowrap">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody id="demoAdminReportsList" class="divide-y divide-slate-100/50">
+                      <!-- Admin reports listed -->
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </main>
+
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: ADD VEHICLE -->
+  <!-- ========================================== -->
+  <div id="vehicleModal" class="fixed inset-0 z-[5000] hidden flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden border border-slate-100 max-h-[90vh] flex flex-col">
+      <div class="h-14 bg-slate-900 text-white flex items-center justify-between px-6">
+        <h3 class="font-bold text-sm uppercase tracking-wide">Register Vehicle Details</h3>
+        <button onclick="closeModal('vehicleModal')" class="text-slate-400 hover:text-white transition-all"><i data-lucide="x" class="h-5 w-5"></i></button>
+      </div>
+
+      <form id="vehicleForm" onsubmit="handleRegisterVehicle(event)" class="p-6 space-y-4 overflow-y-auto flex-1">
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">Vehicle Number</label>
+            <input id="vehNumber" type="text" placeholder="e.g. MH12AB1234" required class="mt-1 block w-full rounded-lg border-slate-200 border p-2 text-sm">
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">Brand Name</label>
+            <input id="vehBrand" type="text" placeholder="e.g. Honda" required class="mt-1 block w-full rounded-lg border-slate-200 border p-2 text-sm">
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">Model Name</label>
+            <input id="vehModel" type="text" placeholder="e.g. City" required class="mt-1 block w-full rounded-lg border-slate-200 border p-2 text-sm">
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">Body Color</label>
+            <input id="vehColor" type="text" placeholder="e.g. White" required class="mt-1 block w-full rounded-lg border-slate-200 border p-2 text-sm">
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">Vehicle Type</label>
+            <select id="vehType" required class="mt-1 block w-full rounded-lg border-slate-200 border p-2 text-sm">
+              <option value="SEDAN">Sedan</option>
+              <option value="HATCHBACK">Hatchback</option>
+              <option value="SUV">SUV</option>
+              <option value="BIKE">Motorcycle</option>
+              <option value="OTHER">Other</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">Fuel Type</label>
+            <select id="vehFuel" required class="mt-1 block w-full rounded-lg border-slate-200 border p-2 text-sm">
+              <option value="PETROL">Petrol</option>
+              <option value="DIESEL">Diesel</option>
+              <option value="CNG">CNG</option>
+              <option value="EV">Electric (EV)</option>
+              <option value="HYBRID">Hybrid</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">Available Seating</label>
+            <input id="vehSeating" type="number" min="1" max="8" value="4" required class="mt-1 block w-full rounded-lg border-slate-200 border p-2 text-sm">
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">Registration Year</label>
+            <input id="vehYear" type="number" value="2023" required class="mt-1 block w-full rounded-lg border-slate-200 border p-2 text-sm">
+          </div>
+          <div class="col-span-2">
+            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">RC document Number</label>
+            <input id="vehRcNum" type="text" placeholder="RC-12345678" required class="mt-1 block w-full rounded-lg border-slate-200 border p-2 text-sm">
+          </div>
+          <div class="col-span-2">
+            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Vehicle Photo</label>
+            <input type="hidden" id="vehImage" required>
+            <div id="vehImagePreviewContainer" class="hidden relative rounded-xl border border-slate-200 overflow-hidden mb-2">
+              <img id="vehImagePreview" src="" class="w-full h-32 object-cover" />
+              <div class="absolute top-2 right-2 flex gap-1">
+                <span class="bg-emerald-500 text-white text-[10px] font-bold px-2 py-1 rounded shadow flex items-center gap-1"><i data-lucide="check-circle" class="h-3 w-3"></i> Uploaded</span>
+              </div>
+              <button type="button" onclick="removeVehicleImage('vehicle')" class="absolute bottom-2 right-2 bg-rose-500 text-white text-xs px-2 py-1 rounded shadow hover:bg-rose-600 transition-colors">Remove</button>
+            </div>
+            <div id="vehImageUploadContainer" class="border-2 border-dashed border-slate-200 rounded-xl p-4 text-center bg-slate-50 hover:bg-slate-100 transition-colors relative">
+              <div id="vehImageUploadContent">
+                <i data-lucide="image" class="h-6 w-6 mx-auto text-slate-400 mb-2"></i>
+                <p class="text-xs text-slate-500 mb-2">Upload a clear photo of your vehicle</p>
+                <input type="file" id="vehImageFile" accept="image/*" class="hidden" onchange="handleModalImageUpload(this, 'vehicle')">
+                <button type="button" onclick="document.getElementById('vehImageFile').click()" class="bg-white border border-slate-200 text-slate-700 font-semibold text-xs px-4 py-1.5 rounded-lg shadow-sm hover:bg-slate-50 transition-colors">Choose Photo</button>
+              </div>
+              <div id="vehImageUploading" class="hidden absolute inset-0 bg-slate-50 flex-col items-center justify-center rounded-xl">
+                 <i data-lucide="loader" class="h-5 w-5 animate-spin text-indigo-600 mb-2"></i>
+                 <span class="text-xs font-semibold text-indigo-600">Uploading...</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="col-span-2">
+            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">RC Document</label>
+            <input type="hidden" id="vehRcImg" required>
+            <div id="vehRcPreviewContainer" class="hidden relative rounded-xl border border-slate-200 overflow-hidden mb-2">
+              <img id="vehRcPreview" src="" class="w-full h-32 object-cover" />
+              <div class="absolute top-2 right-2 flex gap-1">
+                <span class="bg-emerald-500 text-white text-[10px] font-bold px-2 py-1 rounded shadow flex items-center gap-1"><i data-lucide="check-circle" class="h-3 w-3"></i> Uploaded</span>
+              </div>
+              <button type="button" onclick="removeVehicleImage('rc')" class="absolute bottom-2 right-2 bg-rose-500 text-white text-xs px-2 py-1 rounded shadow hover:bg-rose-600 transition-colors">Remove</button>
+            </div>
+            <div id="vehRcUploadContainer" class="border-2 border-dashed border-slate-200 rounded-xl p-4 text-center bg-slate-50 hover:bg-slate-100 transition-colors relative">
+              <div id="vehRcUploadContent">
+                <i data-lucide="file-text" class="h-6 w-6 mx-auto text-slate-400 mb-2"></i>
+                <p class="text-xs text-slate-500 mb-2">Upload a scanned copy or photo of the RC</p>
+                <input type="file" id="vehRcFile" accept="image/*" class="hidden" onchange="handleModalImageUpload(this, 'rc')">
+                <button type="button" onclick="document.getElementById('vehRcFile').click()" class="bg-white border border-slate-200 text-slate-700 font-semibold text-xs px-4 py-1.5 rounded-lg shadow-sm hover:bg-slate-50 transition-colors">Choose Document</button>
+              </div>
+              <div id="vehRcUploading" class="hidden absolute inset-0 bg-slate-50 flex-col items-center justify-center rounded-xl">
+                 <i data-lucide="loader" class="h-5 w-5 animate-spin text-indigo-600 mb-2"></i>
+                 <span class="text-xs font-semibold text-indigo-600">Uploading...</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-4 border-t border-slate-100">
+          <button type="button" onclick="closeModal('vehicleModal')" class="bg-slate-100 text-slate-700 font-semibold text-xs px-4 py-2 rounded-lg hover:bg-slate-200">Cancel</button>
+          <button type="submit" id="saveVehicleBtn" disabled class="bg-slate-300 text-slate-500 font-semibold text-xs px-4 py-2 rounded-lg cursor-not-allowed">Save Vehicle</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MAIN JAVASCRIPT SYSTEM CLIENT -->
+  <!-- ========================================== -->
+  <script>
+    const API_BASE = window.location.origin + '/api/v1';
+
+    // Global variables
+    let demoSocket = null;
+    let demoMap = null;
+    let routePolyline = null;
+    let pickupMarker = null;
+    let destinationMarker = null;
+    let driverMarker = null;
+    let passengerMarker = null;
+    
+    let routeCoords = [];
+    let simulTimer = null;
+    let currentRide = null;
+    let currentBooking = null;
+
+    // Toast alert triggers
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      
+      let bg = 'bg-slate-900';
+      let icon = 'info';
+      if (type === 'success') { bg = 'bg-emerald-600'; icon = 'check-circle'; }
+      if (type === 'error') { bg = 'bg-rose-600'; icon = 'x-circle'; }
+      
+      toast.className = `${bg} text-white flex items-center gap-3 p-4 rounded-xl shadow-lg border border-white/10 transition-all duration-300 transform translate-y-2 opacity-0 pointer-events-auto`;
+      toast.innerHTML = `
+        <i data-lucide="${icon}" class="h-5 w-5 shrink-0"></i>
+        <span class="text-sm font-semibold">${message}</span>
+      `;
+      
+      container.appendChild(toast);
+      lucide.createIcons();
+      
+      // Animate in
+      setTimeout(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      }, 50);
+      
+      // Auto close
+      setTimeout(() => {
+        toast.classList.add('translate-y-2', 'opacity-0');
+        setTimeout(() => toast.remove(), 300);
+      }, 4000);
+    }
+
+    // Modal view handlers
+    function openModal(modalId) {
+      document.getElementById(modalId).classList.remove('hidden');
+    }
+    function closeModal(modalId) {
+      document.getElementById(modalId).classList.add('hidden');
+    }
+
+    // Auth state helper
+    function getHeaders() {
+      const token = localStorage.getItem('token');
+      return {
+        'Content-Type': 'application/json',
+        'Authorization': token ? `Bearer ${token}` : ''
+      };
+    }
+
+    function togglePasswordVisibility(fieldId) {
+      const field = document.getElementById(fieldId);
+      field.type = field.type === 'password' ? 'text' : 'password';
+    }
+
+    // ==========================================
+    // AUTH LOGIC
+    // ==========================================
+    async function handleLogin(e) {
+      e.preventDefault();
+      const loginId = document.getElementById('loginId').value.trim();
+      const password = document.getElementById('password').value;
+      const spinner = document.getElementById('loginSpinner');
+      
+      spinner.classList.remove('hidden');
+      try {
+        const res = await fetch(`${API_BASE}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ loginId, password })
+        });
+        const json = await res.json();
+        
+        if (json.success && json.data?.token) {
+          localStorage.setItem('token', json.data.token);
+          localStorage.setItem('role', json.data.employee.role);
+          localStorage.setItem('employeeName', json.data.employee.name);
+          localStorage.setItem('employeeId', json.data.employee.id);
+          
+          if (document.getElementById('remember_me').checked) {
+            localStorage.setItem('saved_login_id', loginId);
+          } else {
+            localStorage.removeItem('saved_login_id');
+          }
+
+          showToast('Signed in successfully!', 'success');
+          bootstrapDashboard();
+        } else {
+          showToast(json.error?.message || 'Login failed. Please verify credentials.', 'error');
+        }
+      } catch (err) {
+        showToast('Server communication failure: ' + err.message, 'error');
+      } finally {
+        spinner.classList.add('hidden');
+      }
+    }
+
+    function handleLogout() {
+      localStorage.clear();
+      if (demoSocket) {
+        demoSocket.disconnect();
+        demoSocket = null;
+      }
+      document.getElementById('dashboardSection').classList.add('hidden');
+      document.getElementById('authSection').classList.remove('hidden');
+      showToast('Logged out of corporate session.', 'info');
+    }
+
+    // ==========================================
+    // INITIALIZATION & TAB TOGGLING
+    // ==========================================
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+      document.querySelectorAll('.nav-item').forEach(item => {
+        item.classList.remove('bg-slate-800', 'text-white');
+        item.classList.add('text-slate-300');
+      });
+
+      document.getElementById('tab-' + tabId).classList.remove('hidden');
+      const activeNav = document.getElementById('nav-' + tabId);
+      if (activeNav) {
+        activeNav.classList.remove('text-slate-300');
+        activeNav.classList.add('bg-slate-800', 'text-white');
+      }
+
+      // Dynamic header title update
+      const titleMap = {
+        'home': 'Dashboard Overview',
+        'profile': 'My Employee Profile',
+        'vehicles': 'My Commute Vehicles',
+        'offer-ride': 'Publish Commute Ride Pool',
+        'find-ride': 'Find Ride Commutes',
+        'bookings': 'Bookings & Live Tracking',
+        'wallet': 'My Corporate Wallet',
+        'reports': 'Incident Violation Logging',
+        'admin': 'Admin System Reports'
+      };
+      document.getElementById('pageTitle').innerText = titleMap[tabId] || 'Dashboard';
+      
+      // Auto-trigger fetches
+      if (tabId === 'home') refreshHomeStats();
+      if (tabId === 'profile') fetchProfile();
+      if (tabId === 'find-ride') handleSearchRides();
+      if (tabId === 'vehicles') fetchVehicles();
+      if (tabId === 'offer-ride') populateOfferVehicles();
+      if (tabId === 'bookings') refreshActiveDemoState();
+      if (tabId === 'reports') fetchDemoReports();
+      if (tabId === 'admin') {
+        fetchAdminStats();
+        switchAdminTab('dashboard');
+      }
+      if (tabId === 'wallet') {
+        fetchWallet();
+        fetchWalletTransactions();
+      }
+    }
+
+    function bootstrapDashboard() {
+      document.getElementById('authSection').classList.add('hidden');
+      document.getElementById('dashboardSection').classList.remove('hidden');
+
+      const name = localStorage.getItem('employeeName') || 'Corporate User';
+      const role = localStorage.getItem('role') || 'EMPLOYEE';
+
+      document.getElementById('sidebarName').innerText = name;
+      document.getElementById('sidebarRole').innerText = role;
+      document.getElementById('homeWelcomeName').innerText = name;
+      document.getElementById('demoActiveUser').innerText = `Logged in as: ${name} (${role})`;
+
+      // Render Admin Section in Navigation if role === ADMIN
+      if (role === 'ADMIN') {
+        document.getElementById('navAdminSection').classList.remove('hidden');
+      } else {
+        document.getElementById('navAdminSection').classList.add('hidden');
+      }
+
+      switchTab('home');
+      initDemoSocket();
+      lucide.createIcons();
+    }
+
+    // ==========================================
+    // FILE UPLOAD INTEGRATION (Cloudinary)
+    // ==========================================
+    async function uploadImage(target) {
+      let fileInput;
+      if (target === 'profile') fileInput = document.getElementById('profileFile');
+      if (target === 'vehicle' || target === 'rc') fileInput = document.getElementById('modalFile');
+      
+      if (!fileInput || fileInput.files.length === 0) {
+        showToast('Please select a file to upload.', 'error');
+        return;
+      }
+
+      showToast('Uploading to Cloudinary...', 'info');
+      const formData = new FormData();
+      formData.append('image', fileInput.files[0]);
+
+      let folder = 'profile-photos';
+      if (target === 'vehicle') folder = 'vehicle-images';
+      if (target === 'rc') folder = 'vehicle-rc';
+
+      try {
+        const res = await fetch(`${API_BASE}/upload?folder=${folder}`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          },
+          body: formData
+        });
+        const json = await res.json();
+
+        if (json.success && json.data?.url) {
+          showToast('Image uploaded successfully!', 'success');
+          if (target === 'profile') {
+            document.getElementById('profilePhotoUrl').value = json.data.url;
+            document.getElementById('profileCardAvatar').src = json.data.url;
+            document.getElementById('sidebarAvatar').src = json.data.url;
+          } else if (target === 'vehicle') {
+            document.getElementById('vehImage').value = json.data.url;
+          } else if (target === 'rc') {
+            document.getElementById('vehRcImg').value = json.data.url;
+          }
+        } else {
+          showToast('Upload failed: ' + (json.error?.message || 'Unknown error'), 'error');
+        }
+      } catch (err) {
+        showToast('Upload request failed: ' + err.message, 'error');
+      }
+    }
+
+    async function handleModalImageUpload(input, target) {
+      if (!input.files || input.files.length === 0) return;
+
+      const file = input.files[0];
+      const uploadContent = target === 'vehicle' ? document.getElementById('vehImageUploadContent') : document.getElementById('vehRcUploadContent');
+      const uploadingState = target === 'vehicle' ? document.getElementById('vehImageUploading') : document.getElementById('vehRcUploading');
+      const uploadContainer = target === 'vehicle' ? document.getElementById('vehImageUploadContainer') : document.getElementById('vehRcUploadContainer');
+      const previewContainer = target === 'vehicle' ? document.getElementById('vehImagePreviewContainer') : document.getElementById('vehRcPreviewContainer');
+      const previewImg = target === 'vehicle' ? document.getElementById('vehImagePreview') : document.getElementById('vehRcPreview');
+      const hiddenInput = target === 'vehicle' ? document.getElementById('vehImage') : document.getElementById('vehRcImg');
+      
+      uploadContent.classList.add('hidden');
+      uploadingState.classList.remove('hidden');
+      uploadingState.classList.add('flex');
+
+      const formData = new FormData();
+      formData.append('image', file);
+
+      let folder = target === 'vehicle' ? 'vehicle-images' : 'vehicle-rc';
+
+      try {
+        const res = await fetch(`${API_BASE}/upload?folder=${folder}`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          },
+          body: formData
+        });
+        const json = await res.json();
+
+        if (json.success && json.data?.url) {
+          hiddenInput.value = json.data.url;
+          previewImg.src = json.data.url;
+          uploadContainer.classList.add('hidden');
+          previewContainer.classList.remove('hidden');
+          showToast(target === 'vehicle' ? 'Vehicle photo uploaded' : 'RC document uploaded', 'success');
+        } else {
+          showToast('Upload failed: ' + (json.error?.message || 'Unknown error'), 'error');
+        }
+      } catch (err) {
+        showToast('Upload request failed: ' + err.message, 'error');
+      }
+      
+      uploadContent.classList.remove('hidden');
+      uploadingState.classList.add('hidden');
+      uploadingState.classList.remove('flex');
+      input.value = ''; // Reset input
+      
+      lucide.createIcons();
+      checkVehicleFormValidity();
+    }
+
+    function removeVehicleImage(target) {
+      const uploadContainer = target === 'vehicle' ? document.getElementById('vehImageUploadContainer') : document.getElementById('vehRcUploadContainer');
+      const previewContainer = target === 'vehicle' ? document.getElementById('vehImagePreviewContainer') : document.getElementById('vehRcPreviewContainer');
+      const hiddenInput = target === 'vehicle' ? document.getElementById('vehImage') : document.getElementById('vehRcImg');
+      
+      hiddenInput.value = '';
+      previewContainer.classList.add('hidden');
+      uploadContainer.classList.remove('hidden');
+      checkVehicleFormValidity();
+    }
+
+    function checkVehicleFormValidity() {
+      const vehImage = document.getElementById('vehImage').value;
+      const vehRcImg = document.getElementById('vehRcImg').value;
+      const saveBtn = document.getElementById('saveVehicleBtn');
+      
+      if (vehImage && vehRcImg) {
+        saveBtn.disabled = false;
+        saveBtn.className = "bg-indigo-600 text-white font-semibold text-xs px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors";
+      } else {
+        saveBtn.disabled = true;
+        saveBtn.className = "bg-slate-300 text-slate-500 font-semibold text-xs px-4 py-2 rounded-lg cursor-not-allowed";
+      }
+    }
+
+    function resetVehicleUploadUI() {
+      document.getElementById('vehImage').value = '';
+      document.getElementById('vehRcImg').value = '';
+      document.getElementById('vehImagePreviewContainer').classList.add('hidden');
+      document.getElementById('vehImageUploadContainer').classList.remove('hidden');
+      document.getElementById('vehRcPreviewContainer').classList.add('hidden');
+      document.getElementById('vehRcUploadContainer').classList.remove('hidden');
+      checkVehicleFormValidity();
+    }
+
+    // ==========================================
+    // 💳 WALLET METHODS
+    // ==========================================
+    async function fetchWallet() {
+      try {
+        const res = await fetch(`${API_BASE}/wallet`, { headers: getHeaders() });
+        const json = await res.json();
+        
+        if (json.success && json.data) {
+          const balance = parseFloat(json.data.balance).toFixed(2);
+          document.getElementById('walletBalanceDisplay').innerText = balance;
+          
+          // Use employee name for card holder
+          const name = localStorage.getItem('employeeName') || 'Corporate User';
+          document.getElementById('walletCardHolder').innerText = name.toUpperCase();
+
+          // Calculate derived stats for UI from transactions
+          // We will update total earnings and total spent in fetchWalletTransactions
+        }
+      } catch (err) {
+        console.error('Failed to fetch wallet:', err);
+      }
+    }
+
+    async function fetchWalletTransactions() {
+      const listEl = document.getElementById('walletTransactionsList');
+      listEl.innerHTML = '<div class="flex items-center justify-center h-full"><span class="text-sm text-slate-400">Loading transactions...</span></div>';
+      
+      try {
+        const res = await fetch(`${API_BASE}/wallet/history`, { headers: getHeaders() });
+        const json = await res.json();
+        
+        if (json.success && json.data) {
+          let totalEarnings = 0;
+          let totalSpent = 0;
+
+          if (json.data.length === 0) {
+            listEl.innerHTML = '<div class="flex items-center justify-center h-full"><span class="text-sm text-slate-400 text-center">No transactions yet.<br>Recharge to get started.</span></div>';
+          } else {
+            listEl.innerHTML = json.data.map(tx => {
+              const amount = parseFloat(tx.amount);
+              
+              if (tx.type === 'CREDIT' || tx.type === 'RECHARGE') {
+                totalEarnings += (tx.type === 'CREDIT' ? amount : 0);
+              } else if (tx.type === 'PAYMENT') {
+                totalSpent += Math.abs(amount);
+              }
+
+              let icon = 'arrow-right-circle';
+              let iconColor = 'text-slate-400';
+              let bgColor = 'bg-slate-100';
+              let badgeColor = 'bg-slate-100 text-slate-600';
+              let amountColor = 'text-slate-700';
+              let sign = '';
+
+              if (tx.type === 'RECHARGE') {
+                icon = 'arrow-down-circle';
+                iconColor = 'text-green-600';
+                bgColor = 'bg-green-100';
+                badgeColor = 'bg-green-100 text-green-700 border-green-200';
+                amountColor = 'text-green-600';
+                sign = '+';
+              } else if (tx.type === 'PAYMENT') {
+                icon = 'arrow-up-circle';
+                iconColor = 'text-rose-600';
+                bgColor = 'bg-rose-100';
+                badgeColor = 'bg-rose-100 text-rose-700 border-rose-200';
+                amountColor = 'text-rose-600';
+                sign = ''; // Amount is negative natively in backend for payments
+              } else if (tx.type === 'CREDIT') {
+                icon = 'download';
+                iconColor = 'text-blue-600';
+                bgColor = 'bg-blue-100';
+                badgeColor = 'bg-blue-100 text-blue-700 border-blue-200';
+                amountColor = 'text-blue-600';
+                sign = '+';
+              }
+
+              const dateStr = new Date(tx.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+              return `
+                <div class="flex items-center justify-between p-3 border border-slate-100 rounded-xl hover:bg-slate-50 transition-colors">
+                  <div class="flex items-center gap-3 overflow-hidden">
+                    <div class="${bgColor} p-2 rounded-lg shrink-0">
+                      <i data-lucide="${icon}" class="h-5 w-5 ${iconColor}"></i>
+                    </div>
+                    <div class="truncate">
+                      <p class="text-sm font-bold text-slate-800 truncate">${tx.description}</p>
+                      <p class="text-xs text-slate-500">${dateStr}</p>
+                    </div>
+                  </div>
+                  <div class="text-right shrink-0 ml-4">
+                    <p class="text-sm font-black ${amountColor}">${sign}₹${Math.abs(amount).toFixed(2)}</p>
+                    <span class="text-[10px] font-bold px-2 py-0.5 rounded border ${badgeColor}">${tx.type}</span>
+                  </div>
+                </div>
+              `;
+            }).join('');
+          }
+
+          document.getElementById('walletTotalEarnings').innerText = totalEarnings.toFixed(2);
+          document.getElementById('walletTotalSpent').innerText = totalSpent.toFixed(2);
+          lucide.createIcons();
+        }
+      } catch (err) {
+        listEl.innerHTML = '<span class="text-xs text-rose-500">Failed to load transactions.</span>';
+        console.error(err);
+      }
+    }
+
+    function setRechargeAmount(amount) {
+      document.getElementById('customRechargeAmount').value = amount;
+    }
+
+    async function processRecharge() {
+      const amount = parseFloat(document.getElementById('customRechargeAmount').value);
+      if (isNaN(amount) || amount <= 0) {
+        showToast('Please enter a valid amount to recharge', 'error');
+        return;
+      }
+
+      // Hackathon Demo Mode Recharge bypass
+      // If Stripe keys were provided, we would use /wallet/recharge to get a checkout URL
+      // Here we directly confirm with a mock session to bypass Stripe
+      try {
+        const mockSessionId = 'mock_' + Date.now() + '_' + amount;
+        const res = await fetch(`${API_BASE}/wallet/recharge/confirm`, {
+          method: 'POST',
+          headers: getHeaders(),
+          body: JSON.stringify({ sessionId: mockSessionId })
+        });
+        const json = await res.json();
+        
+        if (json.success) {
+          showToast('Demo Payment Successful! ₹' + amount + ' added.', 'success');
+          document.getElementById('customRechargeAmount').value = '';
+          fetchWallet();
+          fetchWalletTransactions();
+        } else {
+          showToast('Recharge failed: ' + json.error?.message, 'error');
+        }
+      } catch (err) {
+        showToast('Communication error during recharge.', 'error');
+        console.error(err);
+      }
+    }
+
+    async function payForBooking(bookingId) {
+      if (!confirm('Deduct fare from your wallet to pay for this ride?')) return;
+      try {
+        const res = await fetch(`${API_BASE}/wallet/pay`, {
+          method: 'POST',
+          headers: getHeaders(),
+          body: JSON.stringify({ bookingId })
+        });
+        const json = await res.json();
+        
+        if (json.success) {
+          showToast('Payment successful! ₹' + json.data.fare + ' deducted.', 'success');
+          refreshActiveDemoState();
+          fetchWallet();
+          fetchWalletTransactions();
+        } else {
+          showToast('Payment failed: ' + json.error?.message, 'error');
+        }
+      } catch (err) {
+        showToast('Communication error during payment.', 'error');
+        console.error(err);
+      }
+    }
+
+    // ==========================================
+    // 🧑‍💼 PROFILE METHODS
+    // ==========================================
+    async function fetchProfile() {
+      try {
+        const res = await fetch(`${API_BASE}/profile`, { headers: getHeaders() });
+        const json = await res.json();
+        
+        if (json.success && json.data) {
+          const profile = json.data;
+          document.getElementById('profileDept').value = profile.department || '';
+          document.getElementById('profileDesignation').value = profile.designation || '';
+          document.getElementById('profileEmergency').value = profile.emergencyContact || '';
+          document.getElementById('profileShift').value = profile.workShift || '';
+          document.getElementById('profileAddress').value = profile.address || '';
+          document.getElementById('profilePhotoUrl').value = profile.profilePhoto || '';
+          
+          if (profile.profilePhoto) {
+            document.getElementById('profileCardAvatar').src = profile.profilePhoto;
+            document.getElementById('sidebarAvatar').src = profile.profilePhoto;
+          }
+        }
+      } catch (err) {
+        showToast('Failed to fetch profile settings.', 'error');
+      }
+    }
+
+    async function handleProfileUpdate(e) {
+      e.preventDefault();
+      const department = document.getElementById('profileDept').value;
+      const designation = document.getElementById('profileDesignation').value;
+      const emergencyContact = document.getElementById('profileEmergency').value;
+      const workShift = document.getElementById('profileShift').value;
+      const address = document.getElementById('profileAddress').value;
+      const profilePhoto = document.getElementById('profilePhotoUrl').value;
+
+      try {
+        const res = await fetch(`${API_BASE}/profile`, {
+          method: 'PUT',
+          headers: getHeaders(),
+          body: JSON.stringify({ department, designation, emergencyContact, workShift, address, profilePhoto })
+        });
+        const json = await res.json();
+        if (json.success) {
+          showToast('Profile settings updated successfully!', 'success');
+          fetchProfile();
+        } else {
+          showToast(json.error?.message || 'Update failed', 'error');
+        }
+      } catch (err) {
+        showToast('Communication failure: ' + err.message, 'error');
+      }
+    }
+
+    // ==========================================
+    // 🚗 VEHICLES METHODS
+    // ==========================================
+    async function fetchVehicles() {
+      const container = document.getElementById('vehiclesList');
+      container.innerHTML = '<span class="text-xs text-slate-400">Loading vehicles...</span>';
+      try {
+        const res = await fetch(`${API_BASE}/vehicles`, { headers: getHeaders() });
+        const json = await res.json();
+        
+        if (json.success && json.data) {
+          if (json.data.length === 0) {
+            container.innerHTML = `
+              <div class="col-span-full border border-dashed border-slate-200 bg-white rounded-2xl p-8 text-center text-slate-400">
+                <i data-lucide="award" class="h-10 w-10 mx-auto mb-2 text-slate-300"></i>
+                <p class="text-sm font-semibold">No vehicles registered</p>
+                <p class="text-xs mt-1">Register a vehicle to offer commuted ride pooling</p>
+              </div>`;
+            lucide.createIcons();
+            return;
+          }
+
+          container.innerHTML = json.data.map(v => `
+            <div class="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm space-y-4">
+              <img src="${v.vehicleImage || 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=400&h=250&fit=crop'}" class="h-40 w-full object-cover rounded-xl" alt="Vehicle">
+              <div>
+                <div class="flex justify-between items-center">
+                  <h4 class="font-bold text-slate-800">${v.brand} ${v.model}</h4>
+                  <span class="text-xs font-bold font-mono bg-slate-100 text-slate-700 px-2 py-1 rounded border border-slate-200">${v.vehicleNumber}</span>
+                </div>
+                <div class="flex gap-2 mt-2 flex-wrap">
+                  <span class="text-[10px] bg-slate-100 text-slate-500 font-semibold px-2 py-0.5 rounded">${v.type}</span>
+                  <span class="text-[10px] bg-slate-100 text-slate-500 font-semibold px-2 py-0.5 rounded">${v.fuelType}</span>
+                  <span class="text-[10px] bg-slate-100 text-slate-500 font-semibold px-2 py-0.5 rounded">Seats: ${v.seatingCapacity}</span>
+                </div>
+              </div>
+              <div class="flex justify-between items-center border-t border-slate-50 pt-4 mt-2">
+                <div class="flex gap-1">
+                  ${v.isDefault ? `<span class="bg-indigo-50 text-indigo-700 border border-indigo-200 text-[10px] font-bold px-2 py-1 rounded">DEFAULT</span>` : ''}
+                  ${v.verificationStatus === 'VERIFIED' ? `<span class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold px-2 py-1 rounded">VERIFIED</span>` : `<span class="bg-amber-50 text-amber-700 border border-amber-200 text-[10px] font-bold px-2 py-1 rounded">PENDING</span>`}
+                </div>
+                <button onclick="handleDeleteVehicle('${v.id}')" class="text-xs text-rose-500 hover:text-rose-700 font-semibold">Delete</button>
+              </div>
+            </div>
+          `).join('');
+          lucide.createIcons();
+        }
+      } catch (err) {
+        showToast('Failed to load registered vehicles.', 'error');
+      }
+    }
+
+    async function handleRegisterVehicle(e) {
+      e.preventDefault();
+      const vehicleNumber = document.getElementById('vehNumber').value.trim().toUpperCase();
+      const brand = document.getElementById('vehBrand').value.trim();
+      const model = document.getElementById('vehModel').value.trim();
+      const color = document.getElementById('vehColor').value.trim();
+      const type = document.getElementById('vehType').value;
+      const fuelType = document.getElementById('vehFuel').value;
+      const seatingCapacity = parseInt(document.getElementById('vehSeating').value);
+      const registrationYear = parseInt(document.getElementById('vehYear').value);
+      const rcNumber = document.getElementById('vehRcNum').value.trim();
+      const vehicleImage = document.getElementById('vehImage').value.trim();
+      const rcImage = document.getElementById('vehRcImg').value.trim();
+
+      const insuranceExpiry = new Date();
+      insuranceExpiry.setFullYear(insuranceExpiry.getFullYear() + 2); // Set future date
+
+      try {
+        const res = await fetch(`${API_BASE}/vehicles`, {
+          method: 'POST',
+          headers: getHeaders(),
+          body: JSON.stringify({ vehicleNumber, brand, model, color, type, fuelType, seatingCapacity, registrationYear, rcNumber, vehicleImage, rcImage, insuranceExpiry })
+        });
+        const json = await res.json();
+
+        if (json.success) {
+          showToast('Vehicle registered successfully!', 'success');
+          closeModal('vehicleModal');
+          document.getElementById('vehicleForm').reset();
+          resetVehicleUploadUI();
+          fetchVehicles();
+        } else {
+          showToast('Failed: ' + (json.error?.message || 'Unknown error'), 'error');
+        }
+      } catch (err) {
+        showToast('Communication failure: ' + err.message, 'error');
+      }
+    }
+
+    async function handleDeleteVehicle(id) {
+      if (!confirm('Are you sure you want to delete this vehicle?')) return;
+      try {
+        const res = await fetch(`${API_BASE}/vehicles/${id}`, { method: 'DELETE', headers: getHeaders() });
+        const json = await res.json();
+        if (json.success) {
+          showToast('Vehicle deleted successfully.', 'success');
+          fetchVehicles();
+        } else {
+          showToast(json.error?.message || 'Delete failed', 'error');
+        }
+      } catch (err) {
+        showToast('Communication failure.', 'error');
+      }
+    }
+
+    // ==========================================
+    // ➕ OFFER RIDE METHODS
+    // ==========================================
+    async function populateOfferVehicles() {
+      const select = document.getElementById('offerVehicleId');
+      select.innerHTML = '<option value="">Loading vehicles...</option>';
+      try {
+        const res = await fetch(`${API_BASE}/vehicles`, { headers: getHeaders() });
+        const json = await res.json();
+        if (json.success && json.data) {
+          select.innerHTML = '<option value="">Choose a vehicle...</option>' + 
+            json.data.map(v => `<option value="${v.id}">${v.brand} ${v.model} (${v.vehicleNumber})</option>`).join('');
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function handleOfferRide(e) {
+      e.preventDefault();
+      const vehicleId = document.getElementById('offerVehicleId').value;
+      const availableSeats = parseInt(document.getElementById('offerSeats').value);
+      const pickupDate = document.getElementById('offerDate').value;
+      const pickupTime = document.getElementById('offerTime').value;
+      const pricePerSeat = parseFloat(document.getElementById('offerPrice').value);
+      const femaleOnly = document.getElementById('offerFemaleOnly').checked;
+      
+      const sourceAddress = document.getElementById('offerSrcAddress').value.trim();
+      let sourceLatitude = parseFloat(document.getElementById('offerSrcLat').value);
+      let sourceLongitude = parseFloat(document.getElementById('offerSrcLng').value);
+      
+      const destinationAddress = document.getElementById('offerDestAddress').value.trim();
+      let destinationLatitude = parseFloat(document.getElementById('offerDestLat').value);
+      let destinationLongitude = parseFloat(document.getElementById('offerDestLng').value);
+
+      // TODO: Temporary hackathon compatibility fix.
+      // Remove this once Ola Maps autocomplete is fully integrated and robust.
+      if (isNaN(sourceLatitude) || isNaN(sourceLongitude)) {
+        if (sourceAddress.toLowerCase().includes('gift')) {
+          sourceLatitude = 23.1645;
+          sourceLongitude = 72.6822;
+        } else if (sourceAddress.toLowerCase().includes('ldrp')) {
+          sourceLatitude = 23.2156;
+          sourceLongitude = 72.6369;
+        } else {
+          // Default fallback
+          sourceLatitude = 18.520430;
+          sourceLongitude = 73.856743;
+        }
+      }
+
+      if (isNaN(destinationLatitude) || isNaN(destinationLongitude)) {
+        if (destinationAddress.toLowerCase().includes('gift')) {
+          destinationLatitude = 23.1645;
+          destinationLongitude = 72.6822;
+        } else if (destinationAddress.toLowerCase().includes('ldrp')) {
+          destinationLatitude = 23.2156;
+          destinationLongitude = 72.6369;
+        } else {
+          // Default fallback
+          destinationLatitude = 18.528430;
+          destinationLongitude = 73.868743;
+        }
+      }
+
+      const notes = document.getElementById('offerNotes').value.trim();
+
+      try {
+        const res = await fetch(`${API_BASE}/rides`, {
+          method: 'POST',
+          headers: getHeaders(),
+          body: JSON.stringify({
+            vehicleId, sourceAddress, sourceLatitude, sourceLongitude,
+            destinationAddress, destinationLatitude, destinationLongitude,
+            pickupDate, pickupTime, pricePerSeat, availableSeats, notes, femaleOnly
+          })
+        });
+        const json = await res.json();
+
+        if (json.success) {
+          showToast('Ride pool offered successfully!', 'success');
+          document.getElementById('offerRideForm').reset();
+          switchTab('bookings');
+        } else {
+          showToast('Ride offer failed: ' + (json.error?.message || 'Check overlapping schedules'), 'error');
+        }
+      } catch (err) {
+        showToast('Communication failure: ' + err.message, 'error');
+      }
+    }
+
+    // ==========================================
+    // 🔍 FIND RIDE METHODS
+    // ==========================================
+    function resetSearchFilters() {
+      document.getElementById('searchSrc').value = '';
+      document.getElementById('searchDest').value = '';
+      document.getElementById('searchDate').value = '';
+      document.getElementById('searchSeats').value = '';
+      document.getElementById('searchSort').value = 'earliest';
+      document.getElementById('searchFemaleOnly').checked = false;
+      handleSearchRides();
+    }
+
+    async function handleSearchRides() {
+      const container = document.getElementById('searchResultsList');
+      container.innerHTML = '<div class="py-12 text-center text-slate-400"><i data-lucide="loader" class="animate-spin h-8 w-8 mx-auto mb-2 text-indigo-400"></i><span class="text-xs font-semibold">Searching commute pools...</span></div>';
+      lucide.createIcons();
+
+      const source = document.getElementById('searchSrc').value.trim();
+      const destination = document.getElementById('searchDest').value.trim();
+      const pickupDate = document.getElementById('searchDate').value;
+      const minSeats = document.getElementById('searchSeats').value;
+      const sort = document.getElementById('searchSort').value;
+      const femaleOnly = document.getElementById('searchFemaleOnly').checked;
+
+      let queryParams = [];
+      if (source) queryParams.push(`source=${encodeURIComponent(source)}`);
+      if (destination) queryParams.push(`destination=${encodeURIComponent(destination)}`);
+      if (pickupDate) queryParams.push(`pickupDate=${encodeURIComponent(pickupDate)}`);
+      if (minSeats) queryParams.push(`minSeats=${encodeURIComponent(minSeats)}`);
+      if (femaleOnly) queryParams.push(`femaleOnly=true`);
+
+      if (sort === 'earliest') {
+        queryParams.push('sortBy=pickupAt&sortOrder=asc');
+      } else if (sort === 'latest') {
+        queryParams.push('sortBy=pickupAt&sortOrder=desc');
+      } else if (sort === 'lowest') {
+        queryParams.push('sortBy=pricePerSeat&sortOrder=asc');
+      } else if (sort === 'highest') {
+        queryParams.push('sortBy=pricePerSeat&sortOrder=desc');
+      }
+      
+      const queryStr = queryParams.length > 0 ? `?${queryParams.join('&')}` : '';
+
+      try {
+        const res = await fetch(`${API_BASE}/rides/search${queryStr}`, { headers: getHeaders() });
+        const json = await res.json();
+
+        if (json.success && json.data) {
+          if (json.data.length === 0) {
+            container.innerHTML = `
+              <div class="border border-dashed border-slate-200 bg-white rounded-2xl p-12 text-center text-slate-400 shadow-sm">
+                <i data-lucide="car-front" class="h-12 w-12 mx-auto mb-4 text-slate-300"></i>
+                <h3 class="text-lg font-black text-slate-600 mb-1">No rides found</h3>
+                <p class="text-sm">Try adjusting your filters or search keywords.</p>
+                <button onclick="resetSearchFilters()" class="mt-4 text-indigo-600 font-bold text-xs hover:underline">Clear all filters</button>
+              </div>`;
+            lucide.createIcons();
+            return;
+          }
+
+          container.innerHTML = json.data.map(r => `
+            <div class="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+              <div class="space-y-2">
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-bold text-white bg-indigo-600 px-2 py-0.5 rounded">${r.rideCode}</span>
+                  ${r.femaleOnly ? `<span class="bg-rose-50 text-rose-600 text-[10px] font-bold px-2 py-0.5 rounded border border-rose-100">FEMALE COMMUTE ONLY</span>` : ''}
+                </div>
+                <h4 class="font-bold text-slate-800 text-base">${r.sourceAddress} ➡️ ${r.destinationAddress}</h4>
+                <div class="flex gap-4 text-xs text-slate-400">
+                  <span class="flex items-center gap-1"><i data-lucide="clock" class="h-3.5 w-3.5"></i> Pickup: ${new Date(r.pickupAt).toLocaleString()}</span>
+                  <span class="flex items-center gap-1"><i data-lucide="user" class="h-3.5 w-3.5"></i> Driver: ${r.driver.name}</span>
+                </div>
+              </div>
+              <div class="flex flex-row md:flex-col items-center md:items-end justify-between w-full md:w-auto gap-4 md:gap-2 pt-4 md:pt-0 border-t md:border-t-0 border-slate-50">
+                <div class="text-left md:text-right">
+                  <span class="text-xl font-black text-slate-800">₹${Number(r.pricePerSeat).toFixed(2)}</span>
+                  <span class="text-xs text-slate-400 block">${r.availableSeats - r.bookedSeats} seats available</span>
+                </div>
+                <div class="flex gap-2">
+                  <select id="seats-${r.id}" class="rounded border-slate-200 text-xs p-1">
+                    <option value="1">1 Seat</option>
+                    <option value="2">2 Seats</option>
+                    <option value="3">3 Seats</option>
+                  </select>
+                  <button onclick="handleRequestBook('${r.id}')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs px-4 py-2 rounded-lg transition-all shadow-sm">
+                    Book Pool
+                  </button>
+                </div>
+              </div>
+            </div>
+          `).join('');
+          lucide.createIcons();
+        }
+      } catch (err) {
+        showToast('Commute search request failed.', 'error');
+      }
+    }
+
+    async function handleRequestBook(rideId) {
+      const seatsBooked = parseInt(document.getElementById(`seats-${rideId}`).value);
+      try {
+        const res = await fetch(`${API_BASE}/bookings`, {
+          method: 'POST',
+          headers: getHeaders(),
+          body: JSON.stringify({ rideId, seatsBooked })
+        });
+        const json = await res.json();
+
+        if (json.success) {
+          showToast('Commute booking requested! Waiting for driver accept.', 'success');
+          switchTab('bookings');
+        } else {
+          showToast('Booking failed: ' + (json.error?.message || 'Error occurred'), 'error');
+        }
+      } catch (err) {
+        showToast('Booking request failed: ' + err.message, 'error');
+      }
+    }
+
+    // ==========================================
+    // 📅 BOOKINGS LOGS & GPS ROUTING SIMULATOR
+    // ==========================================
+    async function refreshActiveDemoState() {
+      initDemoSocket();
+      
+      const passContainer = document.getElementById('passengerBookingsList');
+      const driverContainer = document.getElementById('driverOffersList');
+      const reqContainer = document.getElementById('incomingRequestsContainer');
+      
+      passContainer.innerHTML = '<span class="text-xs text-slate-400">Loading...</span>';
+      driverContainer.innerHTML = '<span class="text-xs text-slate-400">Loading...</span>';
+
+      try {
+        // 1. Fetch passenger bookings
+        const passRes = await fetch(`${API_BASE}/bookings/me`, { headers: getHeaders() });
+        const passJson = await passRes.json();
+        
+        let activeBooking = null;
+        let activeRide = null;
+        let isDriverUser = false;
+
+        if (passJson.success && passJson.data) {
+          if (passJson.data.length === 0) {
+            passContainer.innerHTML = '<span class="text-xs text-slate-400">No bookings filed.</span>';
+          } else {
+            passContainer.innerHTML = passJson.data.map(b => {
+              const totalCost = Number(b.seatsBooked) * Number(b.ride.pricePerSeat);
+              const isPending = b.status === 'PENDING';
+              const isAccepted = b.status === 'ACCEPTED';
+              
+              if (isPending || isAccepted) {
+                activeBooking = b;
+                activeRide = b.ride;
+                isDriverUser = false;
+              }
+
+              return `
+                <div class="border border-slate-100 rounded-xl p-3 bg-slate-50/50 space-y-2">
+                  <div class="flex justify-between items-center">
+                    <span class="text-[10px] font-bold text-white bg-indigo-600 px-1.5 py-0.5 rounded">${b.ride.rideCode}</span>
+                    <span class="text-xs font-bold ${isPending ? 'text-amber-600' : isAccepted ? 'text-emerald-600' : 'text-slate-400'}">${b.status}</span>
+                  </div>
+                  <span class="text-xs text-slate-700 block">${b.ride.sourceAddress} ➡️ ${b.ride.destinationAddress}</span>
+                  <div class="flex justify-between items-center text-[10px] text-slate-400 mt-2">
+                    <span>Seats: ${b.seatsBooked} | Cost: ₹${totalCost.toFixed(2)}</span>
+                    <div class="flex gap-2">
+                      ${isAccepted ? `
+                        <button onclick="payForBooking('${b.id}')" class="bg-indigo-600 text-white hover:bg-indigo-700 px-2 py-1 rounded font-semibold uppercase transition-all shadow-sm">Pay Fare</button>
+                      ` : ''}
+                      ${isPending || isAccepted ? `
+                        <button onclick="handleCancelBooking('${b.id}')" class="text-rose-500 hover:text-rose-700 font-semibold uppercase self-center">Cancel</button>
+                      ` : ''}
+                    </div>
+                  </div>
+                </div>
+              `;
+            }).join('');
+          }
+        }
+
+        // 2. Fetch driver offered rides
+        const driverRes = await fetch(`${API_BASE}/rides`, { headers: getHeaders() });
+        const driverJson = await driverRes.json();
+
+        if (driverJson.success && driverJson.data) {
+          const driverRides = driverJson.data;
+          if (driverRides.length === 0) {
+            driverContainer.innerHTML = '<span class="text-xs text-slate-400">No offered rides.</span>';
+          } else {
+            driverContainer.innerHTML = driverRides.map(r => {
+              const isSched = r.status === 'SCHEDULED';
+              const isStarted = r.status === 'STARTED';
+              
+              if ((isSched || isStarted) && !activeBooking) {
+                activeRide = r;
+                isDriverUser = true;
+              }
+
+              return `
+                <div class="border border-slate-100 rounded-xl p-3 bg-slate-50/50 space-y-2">
+                  <div class="flex justify-between items-center">
+                    <span class="text-[10px] font-bold text-white bg-indigo-600 px-1.5 py-0.5 rounded">${r.rideCode}</span>
+                    <span class="text-xs font-bold ${isSched ? 'text-indigo-600' : isStarted ? 'text-emerald-600' : 'text-slate-400'}">${r.status}</span>
+                  </div>
+                  <span class="text-xs text-slate-700 block">${r.sourceAddress} ➡️ ${r.destinationAddress}</span>
+                  <span class="text-[10px] text-slate-400 block">Date: ${new Date(r.pickupAt).toLocaleDateString()}</span>
+                </div>
+              `;
+            }).join('');
+          }
+        }
+
+        // 3. Fetch driver incoming booking requests
+        const requestsRes = await fetch(`${API_BASE}/bookings/requests`, { headers: getHeaders() });
+        const requestsJson = await requestsRes.json();
+        
+        if (requestsJson.success && requestsJson.data) {
+          const pendingReqs = requestsJson.data.filter(req => req.status === 'PENDING');
+          if (pendingReqs.length === 0) {
+            reqContainer.innerHTML = '<span class="text-xs text-slate-400">No pending seating requests.</span>';
+          } else {
+            reqContainer.innerHTML = pendingReqs.map(req => {
+              if (!activeBooking) {
+                activeBooking = req;
+                activeRide = req.ride;
+                isDriverUser = true;
+              }
+              return `
+                <div class="border border-indigo-100 rounded-xl p-3 bg-indigo-50/40 space-y-2 text-xs">
+                  <div class="flex justify-between items-center">
+                    <span class="font-bold text-indigo-950">User: ${req.passenger.name}</span>
+                    <span class="text-[10px] font-mono text-slate-500">Ride: ${req.ride.rideCode}</span>
+                  </div>
+                  <p class="text-slate-600">Requested <b>${req.seatsBooked} seats</b></p>
+                  <div class="flex gap-2 justify-end">
+                    <button onclick="handleAcceptBooking('${req.id}')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[10px] px-2.5 py-1 rounded">Accept</button>
+                    <button onclick="handleRejectBooking('${req.id}')" class="bg-rose-600 hover:bg-rose-700 text-white font-bold text-[10px] px-2.5 py-1 rounded">Reject</button>
+                  </div>
+                </div>
+              `;
+            }).join('');
+          }
+        }
+
+        // 4. Update Map & Action Button States
+        updateTrackingControls(activeRide, activeBooking, isDriverUser);
+
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    // Update buttons in dynamic controls header block
+    async function updateTrackingControls(activeRide, activeBooking, isDriverUser) {
+      const payBtn = document.getElementById('payRideBtn');
+      const startBtn = document.getElementById('startRideBtn');
+      const completeBtn = document.getElementById('completeRideBtn');
+      const trackingSec = document.getElementById('trackingInfo');
+      
+      payBtn.classList.add('hidden');
+      startBtn.classList.add('hidden');
+      completeBtn.classList.add('hidden');
+      trackingSec.classList.add('hidden');
+
+      if (activeRide) {
+        currentRide = activeRide;
+        currentBooking = activeBooking;
+
+        // Join room
+        demoSocket.emit('join-ride', { rideId: activeRide.id });
+
+        // Load coordinate route
+        loadDemoRoute(
+          Number(activeRide.sourceLatitude),
+          Number(activeRide.sourceLongitude),
+          Number(activeRide.destinationLatitude),
+          Number(activeRide.destinationLongitude)
+        );
+
+        trackingSec.classList.remove('hidden');
+        document.getElementById('rideLifecycleStatus').innerText = activeRide.status;
+
+        if (isDriverUser) {
+          if (activeRide.status === 'SCHEDULED') {
+            startBtn.classList.remove('hidden');
+          } else if (activeRide.status === 'STARTED') {
+            completeBtn.classList.remove('hidden');
+            document.getElementById('simulText').classList.remove('hidden');
+            if (!simulTimer) {
+              startDriverLocationSimulation();
+            }
+          }
+        } else {
+          // Passenger Actions
+          if (activeBooking && activeBooking.status === 'ACCEPTED') {
+            const isPaid = await checkIfBookingPaid(activeBooking.id);
+            if (!isPaid) {
+              payBtn.classList.remove('hidden');
+              payBtn.innerText = `Pay Fare (₹${(Number(activeBooking.seatsBooked) * Number(activeRide.pricePerSeat)).toFixed(2)})`;
+            }
+          }
+        }
+      } else {
+        document.getElementById('mapDistanceText').innerText = 'No active journey';
+        document.getElementById('mapDurationText').innerText = 'No active journey';
+      }
+    }
+
+    async function checkIfBookingPaid(bookingId) {
+      try {
+        const res = await fetch(`${API_BASE}/wallet/history`, { headers: getHeaders() });
+        const json = await res.json();
+        if (json.success && json.data) {
+          return json.data.some(tx => tx.description && tx.description.includes(`Booking Payment: ${bookingId}`));
+        }
+      } catch (err) {
+        console.error(err);
+      }
+      return false;
+    }
+
+    async function handleAcceptBooking(id) {
+      try {
+        const res = await fetch(`${API_BASE}/bookings/${id}/accept`, { method: 'PATCH', headers: getHeaders() });
+        const json = await res.json();
+        if (json.success) {
+          showToast('Commuter booking accepted successfully!', 'success');
+          refreshActiveDemoState();
+        } else {
+          showToast('Failed to accept: ' + json.error?.message, 'error');
+        }
+      } catch (err) {
+        showToast('Communication failure.', 'error');
+      }
+    }
+
+    async function handleRejectBooking(id) {
+      try {
+        const res = await fetch(`${API_BASE}/bookings/${id}/reject`, { method: 'PATCH', headers: getHeaders() });
+        const json = await res.json();
+        if (json.success) {
+          showToast('Commuter booking request rejected.', 'info');
+          refreshActiveDemoState();
+        }
+      } catch (err) {
+        showToast('Communication failure.', 'error');
+      }
+    }
+
+    async function handleCancelBooking(id) {
+      if (!confirm('Are you sure you want to cancel this booking?')) return;
+      try {
+        const res = await fetch(`${API_BASE}/bookings/${id}/cancel`, { method: 'PATCH', headers: getHeaders() });
+        const json = await res.json();
+        if (json.success) {
+          showToast('Booking cancelled.', 'info');
+          refreshActiveDemoState();
+        }
+      } catch (err) {
+        showToast('Communication failure.', 'error');
+      }
+    }
+
+    async function payActiveBooking() {
+      if (!currentBooking) return;
+      try {
+        const res = await fetch(`${API_BASE}/wallet/pay`, {
+          method: 'POST',
+          headers: getHeaders(),
+          body: JSON.stringify({ bookingId: currentBooking.id })
+        });
+        const json = await res.json();
+        if (json.success) {
+          showToast('Fare payment completed successfully!', 'success');
+          refreshActiveDemoState();
+        } else {
+          showToast('Fare payment failed: ' + json.error?.message, 'error');
+        }
+      } catch (err) {
+        showToast('Communication failure.', 'error');
+      }
+    }
+
+    async function startActiveRide() {
+      if (!currentRide) return;
+      try {
+        const res = await fetch(`${API_BASE}/rides/${currentRide.id}/start`, { method: 'POST', headers: getHeaders() });
+        const json = await res.json();
+        if (json.success) {
+          showToast('Ride journey started! GPS coordinates emitting.', 'success');
+          refreshActiveDemoState();
+        } else {
+          showToast('Failed to start ride: ' + json.error?.message, 'error');
+        }
+      } catch (err) {
+        showToast('Communication failure.', 'error');
+      }
+    }
+
+    function startDriverLocationSimulation() {
+      if (simulTimer) clearInterval(simulTimer);
+      if (routeCoords.length === 0) return;
+      
+      let index = 0;
+      
+      simulTimer = setInterval(() => {
+        if (index >= routeCoords.length) {
+          clearInterval(simulTimer);
+          simulTimer = null;
+          document.getElementById('simulText').classList.add('hidden');
+          showToast('🏁 Driver has arrived at the destination!', 'success');
+          return;
+        }
+        
+        const coord = routeCoords[index];
+        const latitude = coord[1];
+        const longitude = coord[0];
+        
+        demoSocket.emit('driver-location-update', {
+          rideId: currentRide.id,
+          latitude,
+          longitude
+        });
+        
+        // Simulating ETA adjustments
+        const remainingSteps = routeCoords.length - index;
+        const etaMin = Math.round(remainingSteps * 0.2); // simulated min
+        document.getElementById('mapDistanceText').innerText = `${(remainingSteps * 0.1).toFixed(1)} km`;
+        document.getElementById('mapDurationText').innerText = `${etaMin} mins`;
+
+        index += Math.max(1, Math.floor(routeCoords.length / 20)); // simulated index jump
+      }, 2000);
+    }
+
+    async function completeActiveRide() {
+      if (!currentRide) return;
+      if (simulTimer) {
+        clearInterval(simulTimer);
+        simulTimer = null;
+      }
+      document.getElementById('simulText').classList.add('hidden');
+      
+      try {
+        const res = await fetch(`${API_BASE}/rides/${currentRide.id}/complete`, { method: 'POST', headers: getHeaders() });
+        const json = await res.json();
+        if (json.success) {
+          showToast(`🏁 Ride completed successfully! Driver credited: ₹${json.data.creditedAmount}`, 'success');
+          refreshActiveDemoState();
+        } else {
+          showToast('Failed to complete ride: ' + json.error?.message, 'error');
+        }
+      } catch (err) {
+        showToast('Communication failure.', 'error');
+      }
+    }
+
+    // ==========================================
+    // 🗺️ LEAFLET MAP DRAWING (HIGHEST PRIORITY)
+    // ==========================================
+    function initDemoMap() {
+      if (demoMap) return;
+      
+      // Default coordinate Acme location
+      demoMap = L.map('map').setView([18.520430, 73.856743], 14);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '© OpenStreetMap contributors'
+      }).addTo(demoMap);
+    }
+
+    async function loadDemoRoute(sourceLat, sourceLng, destLat, destLng) {
+      initDemoMap();
+      
+      if (pickupMarker) demoMap.removeLayer(pickupMarker);
+      if (destinationMarker) demoMap.removeLayer(destinationMarker);
+      if (passengerMarker) demoMap.removeLayer(passengerMarker);
+      if (routePolyline) demoMap.removeLayer(routePolyline);
+      
+      pickupMarker = L.marker([sourceLat, sourceLng]).addTo(demoMap).bindPopup("🟢 <b>Pickup Point</b>");
+      destinationMarker = L.marker([destLat, destLng]).addTo(demoMap).bindPopup("🏁 <b>Destination</b>");
+      
+      demoMap.setView([sourceLat, sourceLng], 14);
+
+      try {
+        const url = `https://router.project-osrm.org/route/v1/driving/${sourceLng},${sourceLat};${destLng},${destLat}?geometries=geojson&overview=full`;
+        const response = await fetch(url);
+        const data = await response.json();
+        
+        if (data.routes && data.routes.length > 0) {
+          routeCoords = data.routes[0].geometry.coordinates;
+          const pathPoints = routeCoords.map(coord => [coord[1], coord[0]]);
+          routePolyline = L.polyline(pathPoints, { color: '#4f46e5', weight: 6, opacity: 0.8 }).addTo(demoMap);
+          demoMap.fitBounds(routePolyline.getBounds());
+          
+          // update metrics
+          const dist = data.routes[0].distance / 1000;
+          const dur = Math.round(data.routes[0].duration / 60);
+          document.getElementById('mapDistanceText').innerText = `${dist.toFixed(1)} km`;
+          document.getElementById('mapDurationText').innerText = `${dur} mins`;
+        }
+      } catch (err) {
+        console.error('Failed to load OSRM route polyline:', err);
+      }
+    }
+
+    function updateDriverMarkerOnMap(lat, lng) {
+      document.getElementById('currentLat').innerText = lat.toFixed(6);
+      document.getElementById('currentLng').innerText = lng.toFixed(6);
+      
+      if (!driverMarker) {
+        const driverIcon = L.icon({
+          iconUrl: 'https://cdn-icons-png.flaticon.com/512/3085/3085336.png',
+          iconSize: [36, 36],
+          iconAnchor: [18, 18]
+        });
+        driverMarker = L.marker([lat, lng], { icon: driverIcon }).addTo(demoMap);
+        driverMarker.bindPopup("🚗 <b>Driver (Live)</b>").openPopup();
+      } else {
+        driverMarker.setLatLng([lat, lng]);
+      }
+      demoMap.panTo([lat, lng]);
+    }
+
+    // ==========================================
+    // 📡 SOCKET.IO L listeners
+    // ==========================================
+    function initDemoSocket() {
+      if (demoSocket) return;
+      
+      // Initialize Socket connection
+      demoSocket = io(window.location.origin);
+      
+      demoSocket.on('connect', () => {
+        console.log('📡 Connected to Socket.IO Server');
+      });
+      
+      demoSocket.on('location-updated', (data) => {
+        console.log('📍 Real-time location updated payload:', data);
+        updateDriverMarkerOnMap(data.latitude, data.longitude);
+      });
+    }
+
+    // ==========================================
+    // 🏠 HOME STATS METHODS
+    // ==========================================
+    async function refreshHomeStats() {
+      try {
+        const res = await fetch(`${API_BASE}/profile`, { headers: getHeaders() });
+        const json = await res.json();
+        
+        const walletsRes = await fetch(`${API_BASE}/wallet`, { headers: getHeaders() });
+        const walletsJson = await walletsRes.json();
+        
+        const vehsRes = await fetch(`${API_BASE}/vehicles`, { headers: getHeaders() });
+        const vehsJson = await vehsRes.json();
+
+        if (json.success && json.data) {
+          // stats
+          document.getElementById('homeStatVehicles').innerText = `${vehsJson.data?.length || 0} registered`;
+          document.getElementById('homeStatWallet').innerText = walletsJson.data ? `₹${Number(walletsJson.data.balance).toFixed(2)}` : '₹0.00';
+          
+          // Check active ride notification
+          const bookingsRes = await fetch(`${API_BASE}/bookings/me`, { headers: getHeaders() });
+          const bookingsJson = await bookingsRes.json();
+          let hasActive = false;
+          if (bookingsJson.success && bookingsJson.data) {
+            hasActive = bookingsJson.data.some(b => b.status === 'PENDING' || b.status === 'ACCEPTED');
+            document.getElementById('homeStatBooking').innerText = hasActive ? '1 Active' : 'None';
+          }
+          
+          const box = document.getElementById('homeActiveRideBox');
+          if (hasActive) {
+            box.classList.remove('hidden');
+          } else {
+            box.classList.add('hidden');
+          }
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    // ==========================================
+    // ⚠️ INCIDENTS & REPORTS METHODS
+    // ==========================================
+    async function submitDemoReport(e) {
+      e.preventDefault();
+      if (!currentRide) {
+        showToast('You must select or view an active booking to file a report.', 'error');
+        return;
+      }
+
+      const category = document.getElementById('demoReportCategory').value;
+      const reportedUserId = document.getElementById('demoReportedUserId').value.trim();
+      const description = document.getElementById('demoReportDesc').value.trim();
+
+      try {
+        const res = await fetch(`${API_BASE}/reports`, {
+          method: 'POST',
+          headers: getHeaders(),
+          body: JSON.stringify({ rideId: currentRide.id, reportedUserId, category, description })
+        });
+        const json = await res.json();
+
+        if (json.success) {
+          showToast('⚠️ Incident report filed successfully!', 'success');
+          document.getElementById('demoReportForm').reset();
+          fetchDemoReports();
+        } else {
+          showToast('Failed to file report: ' + json.error?.message, 'error');
+        }
+      } catch (err) {
+        showToast('Communication failure: ' + err.message, 'error');
+      }
+    }
+
+    async function fetchDemoReports() {
+      const container = document.getElementById('demoMyReportsList');
+      container.innerHTML = '<span class="text-xs text-slate-400">Loading reports history...</span>';
+      
+      try {
+        const res = await fetch(`${API_BASE}/reports`, { headers: getHeaders() });
+        const json = await res.json();
+
+        if (json.success && json.data) {
+          if (json.data.length === 0) {
+            container.innerHTML = '<span class="text-xs text-slate-400">No incidents filed or logged.</span>';
+            return;
+          }
+
+          container.innerHTML = json.data.map(rep => `
+            <div class="border border-slate-100 rounded-xl p-3.5 bg-slate-50/50 space-y-2">
+              <div class="flex justify-between items-center">
+                <span class="bg-rose-50 text-rose-600 text-[10px] font-bold px-2 py-0.5 rounded border border-rose-100 uppercase tracking-wider">${rep.category}</span>
+                <span class="text-xs font-bold text-slate-500 uppercase">${rep.status}</span>
+              </div>
+              <p class="text-xs text-slate-700 font-medium">${rep.description}</p>
+              <div class="flex justify-between items-center text-[10px] text-slate-400 border-t border-slate-100/50 pt-2">
+                <span>Reporter: ${rep.reporter.name}</span>
+                <span>Reported: ${rep.reportedUser.name}</span>
+              </div>
+            </div>
+          `).join('');
+        }
+      } catch (err) {
+        container.innerHTML = '<span class="text-xs text-rose-500">Failed to load reports.</span>';
+      }
+    }
+
+    // ==========================================
+    // 🛡️ ADMIN ONLY METHODS
+    // ==========================================
+    function switchAdminTab(tabId) {
+      document.querySelectorAll('.admin-sub-tab').forEach(el => el.classList.add('hidden'));
+      document.getElementById('admin-sub-' + tabId).classList.remove('hidden');
+      
+      document.querySelectorAll('.admin-nav-item').forEach(el => {
+        el.classList.remove('text-indigo-600', 'border-b-2', 'border-indigo-600');
+        el.classList.add('text-slate-500');
+      });
+      const activeNav = document.getElementById('nav-admin-' + tabId);
+      activeNav.classList.remove('text-slate-500');
+      activeNav.classList.add('text-indigo-600', 'border-b-2', 'border-indigo-600');
+
+      if (tabId === 'dashboard') fetchAdminStats();
+      if (tabId === 'vehicles') fetchAdminVehicles();
+      if (tabId === 'employees') fetchAdminEmployees();
+      if (tabId === 'rides') fetchAdminRides();
+      if (tabId === 'bookings') fetchAdminBookings();
+      if (tabId === 'reports') fetchAdminReports();
+    }
+
+    async function fetchAdminStats() {
+      try {
+        const res = await fetch(`${API_BASE}/admin/stats`, { headers: getHeaders() });
+        const json = await res.json();
+        if (json.success && json.data) {
+          document.getElementById('stat-totalEmployees').innerText = json.data.totalEmployees;
+          document.getElementById('stat-activeEmployees').innerText = json.data.activeEmployees;
+          document.getElementById('stat-verifiedVehicles').innerText = json.data.verifiedVehicles;
+          document.getElementById('stat-pendingVehicles').innerText = json.data.pendingVehicles;
+          document.getElementById('stat-completedRides').innerText = json.data.completedRides;
+          document.getElementById('stat-activeRides').innerText = json.data.activeRides;
+          document.getElementById('stat-totalWalletBalance').innerText = parseFloat(json.data.totalWalletBalance).toFixed(2);
+          document.getElementById('stat-totalBookings').innerText = json.data.totalBookings;
+          document.getElementById('stat-openReports').innerText = json.data.openReports;
+          document.getElementById('stat-resolvedReports').innerText = json.data.resolvedReports;
+        }
+      } catch (err) {
+        console.error('Failed to fetch admin stats:', err);
+      }
+    }
+
+    async function fetchAdminVehicles() {
+      const container = document.getElementById('adminVehiclesList');
+      container.innerHTML = '<tr><td colspan="6" class="p-8 text-center text-slate-400 text-sm">Loading vehicles...</td></tr>';
+      try {
+        const res = await fetch(`${API_BASE}/admin/vehicles`, { headers: getHeaders() });
+        const json = await res.json();
+        if (json.success && json.data) {
+          if (json.data.length === 0) {
+             container.innerHTML = '<tr><td colspan="6" class="p-8 text-center text-slate-400 text-sm">No vehicles found.</td></tr>';
+             return;
+          }
+          container.innerHTML = json.data.map(v => {
+            let statusBadge = v.verificationStatus === 'VERIFIED' ? 'bg-emerald-100 text-emerald-700' :
+                              v.verificationStatus === 'REJECTED' ? 'bg-rose-100 text-rose-700' :
+                              'bg-amber-100 text-amber-700';
+            
+            return `
+              <tr class="hover:bg-slate-50 transition-colors">
+                <td class="p-4 border-b border-slate-100">
+                  <div class="flex items-center gap-3">
+                    <img src="${v.vehicleImage}" alt="Vehicle" class="h-10 w-10 rounded-lg object-cover bg-slate-200">
+                    <div>
+                      <p class="font-bold text-slate-800 text-sm">${v.vehicleNumber}</p>
+                      <p class="text-xs text-slate-500">${v.brand} ${v.model}</p>
+                    </div>
+                  </div>
+                </td>
+                <td class="p-4 border-b border-slate-100">
+                  <p class="font-bold text-slate-800 text-sm">${v.employee.name}</p>
+                  <p class="text-xs text-slate-500">${v.employee.employeeId}</p>
+                </td>
+                <td class="p-4 border-b border-slate-100 text-xs text-slate-600">
+                  ${v.type} | ${v.fuelType}<br>
+                  ${v.seatingCapacity} Seats | Year: ${v.registrationYear}
+                </td>
+                <td class="p-4 border-b border-slate-100">
+                  <a href="${v.rcImage}" target="_blank" class="text-indigo-600 hover:underline text-xs flex items-center gap-1"><i data-lucide="external-link" class="h-3 w-3"></i> View RC</a>
+                </td>
+                <td class="p-4 border-b border-slate-100">
+                  <span class="px-2 py-1 rounded text-[10px] font-bold ${statusBadge}">${v.verificationStatus}</span>
+                </td>
+                <td class="p-4 border-b border-slate-100 text-right">
+                  ${v.verificationStatus === 'PENDING' ? `
+                    <div class="flex justify-end gap-2">
+                      <button onclick="handleVerifyVehicle('${v.id}', 'VERIFIED')" class="bg-emerald-50 text-emerald-600 hover:bg-emerald-100 px-2 py-1 rounded font-bold text-xs transition-colors">Approve</button>
+                      <button onclick="handleVerifyVehicle('${v.id}', 'REJECTED')" class="bg-rose-50 text-rose-600 hover:bg-rose-100 px-2 py-1 rounded font-bold text-xs transition-colors">Reject</button>
+                    </div>
+                  ` : `<span class="text-xs text-slate-400">Processed</span>`}
+                </td>
+              </tr>
+            `;
+          }).join('');
+          lucide.createIcons();
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function handleVerifyVehicle(id, status) {
+      console.log('handleVerifyVehicle called:', id, status);
+      try {
+        console.log('Sending PATCH request to', `${API_BASE}/admin/vehicles/${id}/verify`);
+        const res = await fetch(`${API_BASE}/admin/vehicles/${id}/verify`, {
+          method: 'PATCH',
+          headers: getHeaders(),
+          body: JSON.stringify({ status })
+        });
+        const json = await res.json();
+        console.log('Response:', json);
+        if (json.success) {
+          showToast('Vehicle ' + status.toLowerCase() + ' successfully', 'success');
+          fetchAdminVehicles();
+        } else {
+          showToast(json.error?.message, 'error');
+        }
+      } catch (err) {
+        showToast('Communication error', 'error');
+      }
+    }
+
+    async function fetchAdminEmployees() {
+      const container = document.getElementById('adminEmployeesList');
+      container.innerHTML = '<tr><td colspan="5" class="p-8 text-center text-slate-400 text-sm">Loading employees...</td></tr>';
+      try {
+        const res = await fetch(`${API_BASE}/admin/employees`, { headers: getHeaders() });
+        const json = await res.json();
+        if (json.success && json.data) {
+          container.innerHTML = json.data.map(e => {
+            let statusBadge = e.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-700' :
+                              e.status === 'SUSPENDED' ? 'bg-rose-100 text-rose-700' :
+                              'bg-slate-100 text-slate-700';
+            let roleBadge = e.role === 'ADMIN' ? 'text-indigo-600 font-black' : 'text-slate-600';
+
+            return `
+              <tr class="hover:bg-slate-50 transition-colors">
+                <td class="p-4 border-b border-slate-100">
+                  <div class="flex items-center gap-3">
+                    <div class="h-10 w-10 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold">
+                      ${e.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                      <p class="font-bold text-slate-800 text-sm ${roleBadge}">${e.name}</p>
+                      <p class="text-xs text-slate-500">${e.email}</p>
+                    </div>
+                  </div>
+                </td>
+                <td class="p-4 border-b border-slate-100">
+                  <p class="font-semibold text-slate-700 text-xs">${e.department || 'N/A'}</p>
+                  <p class="text-xs text-slate-500">${e.role}</p>
+                </td>
+                <td class="p-4 border-b border-slate-100 text-xs text-slate-600">
+                  Vehicles: <b>${e._count.vehicles}</b><br>
+                  Rides: <b>${e._count.rides}</b><br>
+                  Bookings: <b>${e._count.bookings}</b>
+                </td>
+                <td class="p-4 border-b border-slate-100">
+                  <span class="px-2 py-1 rounded text-[10px] font-bold ${statusBadge}">${e.status}</span>
+                </td>
+                <td class="p-4 border-b border-slate-100 text-right">
+                  ${e.role !== 'ADMIN' ? `
+                    ${e.status === 'ACTIVE' ? 
+                      `<button onclick="handleEmployeeStatus('${e.id}', 'SUSPENDED')" class="bg-rose-50 text-rose-600 hover:bg-rose-100 px-3 py-1 rounded font-bold text-xs transition-colors">Suspend</button>` :
+                      `<button onclick="handleEmployeeStatus('${e.id}', 'ACTIVE')" class="bg-emerald-50 text-emerald-600 hover:bg-emerald-100 px-3 py-1 rounded font-bold text-xs transition-colors">Activate</button>`
+                    }
+                  ` : '<span class="text-[10px] uppercase text-indigo-400 font-bold">System Admin</span>'}
+                </td>
+              </tr>
+            `;
+          }).join('');
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function handleEmployeeStatus(id, status) {
+      console.log('handleEmployeeStatus called:', id, status);
+      try {
+        console.log('Sending PATCH request to', `${API_BASE}/admin/employees/${id}/status`);
+        const res = await fetch(`${API_BASE}/admin/employees/${id}/status`, {
+          method: 'PATCH',
+          headers: getHeaders(),
+          body: JSON.stringify({ status })
+        });
+        const json = await res.json();
+        console.log('Response:', json);
+        if (json.success) {
+          showToast(`Employee ${status.toLowerCase()} successfully`, 'success');
+          fetchAdminEmployees();
+        } else {
+          showToast(json.error?.message, 'error');
+        }
+      } catch (err) {
+        showToast('Communication error', 'error');
+      }
+    }
+
+    async function fetchAdminRides() {
+      const container = document.getElementById('adminRidesList');
+      container.innerHTML = '<tr><td colspan="5" class="p-8 text-center text-slate-400 text-sm">Loading rides...</td></tr>';
+      try {
+        const res = await fetch(`${API_BASE}/admin/rides`, { headers: getHeaders() });
+        const json = await res.json();
+        if (json.success && json.data) {
+          container.innerHTML = json.data.map(r => {
+            let statusColor = r.status === 'COMPLETED' ? 'text-emerald-600' :
+                              r.status === 'CANCELLED' ? 'text-rose-600' :
+                              r.status === 'STARTED' ? 'text-indigo-600' : 'text-amber-500';
+            return `
+              <tr class="hover:bg-slate-50 transition-colors">
+                <td class="p-4 border-b border-slate-100">
+                  <span class="bg-slate-100 text-slate-800 px-2 py-1 rounded text-xs font-mono font-bold">${r.rideCode}</span>
+                  <p class="text-[10px] text-slate-400 mt-1">${new Date(r.pickupAt).toLocaleString()}</p>
+                </td>
+                <td class="p-4 border-b border-slate-100">
+                  <p class="font-bold text-slate-800 text-xs">${r.driver.name}</p>
+                  <p class="text-[10px] text-slate-500">${r.vehicle.brand} ${r.vehicle.model} (${r.vehicle.vehicleNumber})</p>
+                </td>
+                <td class="p-4 border-b border-slate-100">
+                  <p class="text-xs text-slate-600 truncate max-w-[200px]" title="${r.sourceAddress}"><i data-lucide="map-pin" class="inline h-3 w-3 text-emerald-500"></i> ${r.sourceAddress.split(',')[0]}</p>
+                  <p class="text-xs text-slate-600 truncate max-w-[200px]" title="${r.destinationAddress}"><i data-lucide="flag" class="inline h-3 w-3 text-rose-500"></i> ${r.destinationAddress.split(',')[0]}</p>
+                </td>
+                <td class="p-4 border-b border-slate-100 text-xs text-slate-600">
+                  ₹${r.pricePerSeat} / seat<br>
+                  ${r._count.participants} Bookings
+                </td>
+                <td class="p-4 border-b border-slate-100">
+                  <span class="text-xs font-black ${statusColor}">${r.status}</span>
+                </td>
+              </tr>
+            `;
+          }).join('');
+          lucide.createIcons();
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function fetchAdminBookings() {
+      const container = document.getElementById('adminBookingsList');
+      container.innerHTML = '<tr><td colspan="5" class="p-8 text-center text-slate-400 text-sm">Loading bookings...</td></tr>';
+      try {
+        const res = await fetch(`${API_BASE}/admin/bookings`, { headers: getHeaders() });
+        const json = await res.json();
+        if (json.success && json.data) {
+          container.innerHTML = json.data.map(b => {
+            let statusColor = b.status === 'ACCEPTED' ? 'text-emerald-600' :
+                              b.status === 'REJECTED' || b.status === 'CANCELLED' ? 'text-rose-600' : 'text-amber-500';
+            return `
+              <tr class="hover:bg-slate-50 transition-colors">
+                <td class="p-4 border-b border-slate-100 text-xs text-slate-500">
+                  ${new Date(b.createdAt).toLocaleString()}
+                </td>
+                <td class="p-4 border-b border-slate-100">
+                  <p class="font-bold text-slate-800 text-xs">${b.passenger.name}</p>
+                  <p class="text-[10px] text-slate-500">${b.passenger.employeeId}</p>
+                </td>
+                <td class="p-4 border-b border-slate-100">
+                  <span class="bg-slate-100 text-slate-800 px-1.5 py-0.5 rounded text-[10px] font-mono font-bold">${b.ride.rideCode}</span>
+                  <p class="text-[10px] text-slate-500 mt-0.5">Driver: ${b.ride.driver.name}</p>
+                </td>
+                <td class="p-4 border-b border-slate-100 text-xs font-semibold text-slate-700">
+                  ${b.seatsBooked}
+                <td class="p-4 border-b border-slate-100">
+                  <span class="text-[10px] font-black uppercase ${statusColor}">${b.status}</span>
+                </td>
+              </tr>
+            `;
+          }).join('');
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    let allAdminReports = [];
+
+    async function fetchAdminReports() {
+      const container = document.getElementById('demoAdminReportsList');
+      if (!container) return;
+      container.innerHTML = '<tr><td colspan="5" class="p-8 text-center text-slate-400 text-sm">Loading admin violation feed...</td></tr>';
+
+      try {
+        const res = await fetch(`${API_BASE}/reports`, { headers: getHeaders() });
+        const json = await res.json();
+
+        if (json.success && json.data) {
+          allAdminReports = json.data;
+          renderAdminReports(allAdminReports);
+        }
+      } catch (err) {
+        console.error('Failed to fetch admin reports:', err);
+      }
+    }
+
+    function renderAdminReports(reports) {
+      const container = document.getElementById('demoAdminReportsList');
+      if (!container) return;
+      if (reports.length === 0) {
+        container.innerHTML = '<tr><td colspan="5" class="p-12 text-center text-slate-400 text-sm font-medium">No system reports found.</td></tr>';
+        return;
+      }
+
+      container.innerHTML = reports.map(rep => {
+        let statusBadge = rep.status === 'RESOLVED' ? 'bg-emerald-100/50 text-emerald-700 border-emerald-200' :
+                          rep.status === 'REVIEWING' ? 'bg-indigo-100/50 text-indigo-700 border-indigo-200' :
+                          'bg-amber-100/50 text-amber-700 border-amber-200';
+                          
+        let categoryColor = rep.category === 'SAFETY' || rep.category === 'HARASSMENT' ? 'text-rose-600 bg-rose-50' : 
+                            'text-slate-600 bg-slate-100';
+
+        return `
+          <tr class="hover:bg-white/40 transition-colors group">
+            <td class="p-4 align-top w-2/5">
+              <p class="text-sm text-slate-700 font-medium leading-relaxed">${rep.description}</p>
+              <p class="text-[10px] text-slate-400 mt-2 font-mono">${new Date(rep.createdAt).toLocaleString()}</p>
+            </td>
+            <td class="p-4 align-top whitespace-nowrap">
+              <div class="flex items-center gap-2">
+                <div class="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-600">
+                  ${rep.reporter?.name?.charAt(0).toUpperCase() || '?'}
+                </div>
+                <div>
+                  <p class="text-xs font-bold text-slate-800">${rep.reporter?.name || 'Unknown'}</p>
+                  <p class="text-[10px] text-slate-500">${rep.reporter?.employeeId || 'N/A'}</p>
+                </div>
+              </div>
+            </td>
+            <td class="p-4 align-top whitespace-nowrap">
+              <span class="${categoryColor} text-[10px] font-black px-2.5 py-1 rounded-md tracking-wide uppercase">${rep.category}</span>
+            </td>
+            <td class="p-4 align-top whitespace-nowrap">
+              <span class="${statusBadge} border text-[10px] font-black px-2.5 py-1 rounded-md tracking-wide uppercase">${rep.status}</span>
+            </td>
+            <td class="p-4 align-top text-right whitespace-nowrap">
+              ${rep.status !== 'RESOLVED' ? `
+                <div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  ${rep.status === 'PENDING' ? 
+                    `<button onclick="updateDemoReportStatus('${rep.id}', 'REVIEWING')" class="text-xs font-bold px-3 py-1.5 rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-colors">Review</button>` : ''
+                  }
+                  <button onclick="updateDemoReportStatus('${rep.id}', 'RESOLVED')" class="text-xs font-bold px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-colors">Resolve</button>
+                </div>
+              ` : '<span class="text-xs text-slate-400 font-medium">Closed</span>'}
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function filterAdminReports() {
+      const q = document.getElementById('reportSearch').value.toLowerCase();
+      const status = document.getElementById('reportFilterStatus').value;
+
+      const filtered = allAdminReports.filter(rep => {
+        const matchQ = rep.description.toLowerCase().includes(q) || (rep.reporter?.name || '').toLowerCase().includes(q);
+        const matchStatus = status === 'ALL' || rep.status === status;
+        return matchQ && matchStatus;
+      });
+      renderAdminReports(filtered);
+    }
+
+    async function updateDemoReportStatus(reportId, status) {
+      try {
+        const res = await fetch(`${API_BASE}/reports/${reportId}/status`, {
+          method: 'PATCH',
+          headers: getHeaders(),
+          body: JSON.stringify({ status })
+        });
+        const json = await res.json();
+        if (json.success) {
+          showToast('System report status updated successfully!', 'success');
+          fetchAdminReports();
+        } else {
+          showToast('Failed to update status: ' + json.error?.message, 'error');
+        }
+      } catch (err) {
+        showToast('Communication failure.', 'error');
+      }
+    }
+
+    function validateOfferRideForm() {
+      const sLat = document.getElementById('offerSrcLat').value;
+      const sLng = document.getElementById('offerSrcLng').value;
+      const dLat = document.getElementById('offerDestLat').value;
+      const dLng = document.getElementById('offerDestLng').value;
+      const btn = document.getElementById('offerRideSubmitBtn');
+      const errMsg = document.getElementById('offerRideErrorMsg');
+      
+      if (btn && errMsg) {
+        // HACKATHON DEMO: We fallback to hardcoded coordinates if empty, so never disable the button.
+        btn.disabled = false;
+        errMsg.classList.add('hidden');
+      }
+    }
+
+    // ==========================================
+    // MAPS AUTOCOMPLETE
+    // ==========================================
+    function setupAutocomplete(inputId, listId, latId, lngId) {
+      const inputEl = document.getElementById(inputId);
+      const listEl = document.getElementById(listId);
+      const latEl = document.getElementById(latId);
+      const lngEl = document.getElementById(lngId);
+      let timeout = null;
+
+      inputEl.addEventListener('input', (e) => {
+        // Clear hidden coords on manual input to force selection
+        latEl.value = '';
+        lngEl.value = '';
+        validateOfferRideForm();
+
+        clearTimeout(timeout);
+        const query = e.target.value.trim();
+        if (query.length < 3) {
+          listEl.innerHTML = '';
+          listEl.classList.add('hidden');
+          return;
+        }
+
+        timeout = setTimeout(async () => {
+          try {
+            const res = await fetch(`${API_BASE}/maps/search?q=${encodeURIComponent(query)}`, {
+              headers: getHeaders()
+            });
+            const json = await res.json();
+            
+            if (json.success && json.data.length > 0) {
+              listEl.innerHTML = '';
+              json.data.forEach(place => {
+                const item = document.createElement('div');
+                item.className = 'px-4 py-2 hover:bg-slate-100 cursor-pointer text-sm border-b border-slate-50 last:border-0';
+                item.innerHTML = `<div class="font-bold text-slate-800">${place.name}</div><div class="text-[10px] text-slate-500 truncate">${place.formattedAddress}</div>`;
+                item.addEventListener('click', () => {
+                  inputEl.value = place.name;
+                  latEl.value = place.lat;
+                  lngEl.value = place.lng;
+                  listEl.classList.add('hidden');
+                  
+                  validateOfferRideForm();
+
+                  // Trigger route generation if both source and dest are filled
+                  const sLat = document.getElementById('offerSrcLat').value;
+                  const sLng = document.getElementById('offerSrcLng').value;
+                  const dLat = document.getElementById('offerDestLat').value;
+                  const dLng = document.getElementById('offerDestLng').value;
+                  if (sLat && sLng && dLat && dLng) {
+                    loadDemoRoute(parseFloat(sLat), parseFloat(sLng), parseFloat(dLat), parseFloat(dLng));
+                  }
+                });
+                listEl.appendChild(item);
+              });
+              listEl.classList.remove('hidden');
+            } else {
+              listEl.classList.add('hidden');
+            }
+          } catch (err) {
+            console.error('Autocomplete error:', err);
+          }
+        }, 500);
+      });
+      
+      // Hide on blur
+      document.addEventListener('click', (e) => {
+        if (!inputEl.contains(e.target) && !listEl.contains(e.target)) {
+          listEl.classList.add('hidden');
+        }
+      });
+    }
+
+    // Auto boot dashboard on page load if token is cached
+    window.addEventListener('DOMContentLoaded', () => {
+      setupAutocomplete('offerSrcAddress', 'offerSrcAutocomplete', 'offerSrcLat', 'offerSrcLng');
+      setupAutocomplete('offerDestAddress', 'offerDestAutocomplete', 'offerDestLat', 'offerDestLng');
+      const savedLoginId = localStorage.getItem('saved_login_id');
+      if (savedLoginId) {
+        const loginInput = document.getElementById('loginId');
+        if (loginInput) loginInput.value = savedLoginId;
+        const rememberChk = document.getElementById('remember_me');
+        if (rememberChk) rememberChk.checked = true;
+      }
+
+      if (localStorage.getItem('token')) {
+        bootstrapDashboard();
+      }
+    });
+  </script>
+</body>
+</html>
