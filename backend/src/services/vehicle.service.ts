@@ -108,7 +108,7 @@ export class VehicleService {
    */
   static async listVehicles(ownerId: string) {
     return await prisma.vehicle.findMany({
-      where: { ownerId },
+      where: { ownerId, status: 'ACTIVE' },
       orderBy: { createdAt: 'desc' }
     });
   }

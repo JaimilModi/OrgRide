@@ -61,13 +61,12 @@
     </div>
 
     <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md relative z-10 px-4 sm:px-0">
-      <!-- Login / Register Card -->
+      <!-- Login Card -->
       <div class="glass-panel border border-white/20 py-8 px-6 shadow-2xl rounded-2xl sm:px-10">
         
-        <!-- Tabs -->
-        <div class="flex border-b border-slate-200 mb-6">
-          <button id="tabBtnLogin" onclick="toggleAuthTab('login')" class="w-1/2 pb-3 font-semibold text-sm border-b-2 border-indigo-600 text-indigo-600 transition-all">Sign In</button>
-          <button id="tabBtnRegister" onclick="toggleAuthTab('register')" class="w-1/2 pb-3 font-semibold text-sm border-b-2 border-transparent text-slate-500 hover:text-slate-700 transition-all">Register Info</button>
+        <div class="text-center mb-6">
+          <h2 class="text-2xl font-black text-slate-800 tracking-tight">Welcome Back</h2>
+          <p class="text-sm text-slate-500 mt-1">Sign in to your corporate account.</p>
         </div>
 
         <!-- Login Form -->
@@ -76,7 +75,7 @@
             <label for="loginId" class="block text-xs font-semibold text-slate-600 uppercase tracking-wider">Employee Email / ID</label>
             <div class="mt-1 relative">
               <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400"><i data-lucide="mail" class="h-4 w-4"></i></span>
-              <input id="loginId" type="text" value="admin@acme.com" required class="pl-10 block w-full rounded-lg border-slate-200 bg-white/50 border shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2.5">
+              <input id="loginId" type="text" required class="pl-10 block w-full rounded-lg border-slate-200 bg-white/50 border shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2.5">
             </div>
           </div>
 
@@ -84,7 +83,7 @@
             <label for="password" class="block text-xs font-semibold text-slate-600 uppercase tracking-wider">Password</label>
             <div class="mt-1 relative">
               <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400"><i data-lucide="lock" class="h-4 w-4"></i></span>
-              <input id="password" type="password" value="password123" required class="pl-10 pr-10 block w-full rounded-lg border-slate-200 bg-white/50 border shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2.5">
+              <input id="password" type="password" required class="pl-10 pr-10 block w-full rounded-lg border-slate-200 bg-white/50 border shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2.5">
               <button type="button" onclick="togglePasswordVisibility('password')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600"><i data-lucide="eye" class="h-4 w-4"></i></button>
             </div>
           </div>
@@ -102,21 +101,21 @@
           </button>
         </form>
 
-        <!-- Register Guideline Form -->
-        <div id="registerForm" class="space-y-5 hidden">
-          <div class="bg-indigo-50 border border-indigo-200 rounded-xl p-4 text-sm text-indigo-900 leading-relaxed space-y-2">
-            <p class="font-bold flex items-center gap-1.5"><i data-lucide="info" class="h-4 w-4"></i> Corporate Provisioning Note</p>
-            <p>Registration of employee accounts is managed via central Active Directory integration. The database is preloaded with corporate test accounts for verification:</p>
-            <ul class="list-disc pl-4 space-y-1">
-              <li><b>Alice Admin:</b> admin@acme.com (Driver / Admin)</li>
-              <li><b>Bob Employee:</b> employee@acme.com (Passenger commuted)</li>
-              <li><b>Charlie Employee:</b> charlie@acme.com</li>
-            </ul>
-            <p class="text-xs text-indigo-600 mt-2 font-medium">Please sign in immediately using <b>password123</b> to run the demo flow.</p>
+        <!-- Demo Accounts Section -->
+        <div class="mt-8 pt-6 border-t border-slate-200">
+          <p class="text-xs font-bold text-slate-400 uppercase tracking-wider text-center mb-4">Demo Accounts</p>
+          <div class="grid grid-cols-2 gap-4">
+            <div class="bg-indigo-50 rounded-xl p-3 border border-indigo-100 text-center cursor-pointer hover:bg-indigo-100 transition-colors" onclick="document.getElementById('loginId').value='admin@acme.com'; document.getElementById('password').value='password123';">
+              <p class="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-1">Admin</p>
+              <p class="text-xs font-bold text-indigo-900">admin@acme.com</p>
+              <p class="text-xs text-indigo-600 font-mono mt-0.5">password123</p>
+            </div>
+            <div class="bg-emerald-50 rounded-xl p-3 border border-emerald-100 text-center cursor-pointer hover:bg-emerald-100 transition-colors" onclick="document.getElementById('loginId').value='diana@acme.com'; document.getElementById('password').value='password123';">
+              <p class="text-[10px] font-black text-emerald-500 uppercase tracking-widest mb-1">Employee</p>
+              <p class="text-xs font-bold text-emerald-900">diana@acme.com</p>
+              <p class="text-xs text-emerald-600 font-mono mt-0.5">password123</p>
+            </div>
           </div>
-          <button onclick="toggleAuthTab('login')" class="w-full flex justify-center py-2.5 px-4 border border-slate-300 rounded-lg text-sm font-semibold text-slate-700 bg-white hover:bg-slate-50 focus:outline-none transition-all">
-            Return to Login
-          </button>
         </div>
 
       </div>
@@ -462,27 +461,62 @@
         <!-- TAB: FIND RIDE -->
         <!-- ========================================== -->
         <div id="tab-find-ride" class="tab-content space-y-6 hidden">
-          <div class="bg-white border border-slate-100 shadow-sm rounded-2xl p-5 flex flex-col md:flex-row gap-4 items-center">
+          <div class="bg-white border border-slate-100 shadow-sm rounded-2xl p-5 flex flex-col gap-4">
             
-            <!-- Filters -->
-            <div class="flex-1 w-full grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div>
-                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Pickup Date</label>
-                <input id="searchDate" type="date" class="mt-1 block w-full rounded-lg border-slate-200 border p-2 text-sm">
-              </div>
+            <!-- Filters Row 1: Search Inputs -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
                 <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Source Keyword</label>
-                <input id="searchSrc" type="text" placeholder="e.g. Acme" class="mt-1 block w-full rounded-lg border-slate-200 border p-2 text-sm">
+                <div class="mt-1 relative">
+                  <span class="absolute inset-y-0 left-0 pl-2.5 flex items-center text-slate-400"><i data-lucide="map-pin" class="h-3.5 w-3.5"></i></span>
+                  <input id="searchSrc" type="text" placeholder="e.g. Acme" onkeyup="handleSearchRides()" class="block w-full pl-8 rounded-lg border-slate-200 border p-2 text-sm focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
               </div>
               <div>
                 <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Destination Keyword</label>
-                <input id="searchDest" type="text" placeholder="e.g. Station" class="mt-1 block w-full rounded-lg border-slate-200 border p-2 text-sm">
+                <div class="mt-1 relative">
+                  <span class="absolute inset-y-0 left-0 pl-2.5 flex items-center text-slate-400"><i data-lucide="map-pin" class="h-3.5 w-3.5"></i></span>
+                  <input id="searchDest" type="text" placeholder="e.g. Station" onkeyup="handleSearchRides()" class="block w-full pl-8 rounded-lg border-slate-200 border p-2 text-sm focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Pickup Date</label>
+                <input id="searchDate" type="date" onchange="handleSearchRides()" class="mt-1 block w-full rounded-lg border-slate-200 border p-2 text-sm focus:ring-indigo-500 focus:border-indigo-500">
               </div>
             </div>
 
-            <button onclick="handleSearchRides()" class="bg-indigo-600 text-white font-semibold text-sm px-6 py-2.5 rounded-lg hover:bg-indigo-700 transition-all w-full md:w-auto mt-2 md:mt-0 shadow-sm flex items-center gap-1.5 justify-center">
-              <i data-lucide="search" class="h-4 w-4"></i> Search Pools
-            </button>
+            <!-- Filters Row 2: Selects & Toggles -->
+            <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 items-end">
+              <div>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Min Seats</label>
+                <select id="searchSeats" onchange="handleSearchRides()" class="mt-1 block w-full rounded-lg border-slate-200 border p-2 text-sm focus:ring-indigo-500 focus:border-indigo-500">
+                  <option value="">Any</option>
+                  <option value="1">1+ Seats</option>
+                  <option value="2">2+ Seats</option>
+                  <option value="3">3+ Seats</option>
+                  <option value="4">4+ Seats</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Sort By</label>
+                <select id="searchSort" onchange="handleSearchRides()" class="mt-1 block w-full rounded-lg border-slate-200 border p-2 text-sm focus:ring-indigo-500 focus:border-indigo-500">
+                  <option value="earliest">Earliest Departure</option>
+                  <option value="latest">Latest Departure</option>
+                  <option value="lowest">Lowest Fare</option>
+                  <option value="highest">Highest Fare</option>
+                </select>
+              </div>
+              <div class="flex items-center h-full pb-2">
+                <input id="searchFemaleOnly" type="checkbox" onchange="handleSearchRides()" class="h-4 w-4 text-rose-500 focus:ring-rose-500 border-gray-300 rounded cursor-pointer">
+                <label for="searchFemaleOnly" class="ml-2 block text-xs font-bold text-slate-600 cursor-pointer">Female Only</label>
+              </div>
+              <div class="flex justify-end h-full">
+                <button onclick="resetSearchFilters()" class="text-slate-500 hover:text-indigo-600 font-bold text-xs px-4 py-2 flex items-center gap-1 transition-all h-full pb-2">
+                  <i data-lucide="rotate-ccw" class="h-3.5 w-3.5"></i> Reset
+                </button>
+              </div>
+            </div>
+            
           </div>
 
           <!-- Search Results List -->
@@ -917,14 +951,46 @@
             </div>
 
             <!-- ADMIN SUB: REPORTS -->
-            <div id="admin-sub-reports" class="admin-sub-tab hidden space-y-4">
-              <div class="flex justify-between items-center mb-2">
-                <h2 class="text-xl font-bold text-slate-800">Incident Reports</h2>
-                <button onclick="fetchAdminReports()" class="bg-indigo-50 text-indigo-600 hover:bg-indigo-100 font-bold text-xs px-3 py-1.5 rounded-lg flex items-center gap-1 transition-all"><i data-lucide="refresh-cw" class="h-3 w-3"></i> Refresh</button>
+            <div id="admin-sub-reports" class="admin-sub-tab hidden space-y-6">
+              <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                  <h2 class="text-2xl font-black text-slate-800 tracking-tight">Incident Reports</h2>
+                  <p class="text-sm text-slate-500 mt-1">Manage and resolve user reported issues.</p>
+                </div>
+                <div class="flex items-center gap-3 w-full md:w-auto">
+                  <div class="relative flex-1 md:w-64">
+                    <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400"></i>
+                    <input type="text" id="reportSearch" onkeyup="filterAdminReports()" placeholder="Search reports..." class="w-full pl-9 pr-4 py-2 bg-white/60 backdrop-blur border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all">
+                  </div>
+                  <select id="reportFilterStatus" onchange="filterAdminReports()" class="bg-white/60 backdrop-blur border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all cursor-pointer">
+                    <option value="ALL">All Status</option>
+                    <option value="PENDING">Pending</option>
+                    <option value="REVIEWING">Reviewing</option>
+                    <option value="RESOLVED">Resolved</option>
+                  </select>
+                  <button onclick="fetchAdminReports()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm px-4 py-2 rounded-xl flex items-center gap-2 transition-all shadow-lg shadow-indigo-200 hover:shadow-indigo-300 transform hover:-translate-y-0.5">
+                    <i data-lucide="refresh-cw" class="h-4 w-4"></i>
+                  </button>
+                </div>
               </div>
-              <div class="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm">
-                <div id="demoAdminReportsList" class="space-y-4">
-                  <!-- Admin reports listed -->
+
+              <!-- Reports Table -->
+              <div class="bg-white/60 backdrop-blur-xl border border-white/40 rounded-3xl overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left border-collapse">
+                    <thead>
+                      <tr class="bg-slate-50/50 backdrop-blur-sm border-b border-slate-100/50">
+                        <th class="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap">Report Details</th>
+                        <th class="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap">Reporter</th>
+                        <th class="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap">Category</th>
+                        <th class="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap">Status</th>
+                        <th class="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider text-right whitespace-nowrap">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody id="demoAdminReportsList" class="divide-y divide-slate-100/50">
+                      <!-- Admin reports listed -->
+                    </tbody>
+                  </table>
                 </div>
               </div>
             </div>
@@ -1093,25 +1159,6 @@
       };
     }
 
-    function toggleAuthTab(tab) {
-      const btnLogin = document.getElementById('tabBtnLogin');
-      const btnRegister = document.getElementById('tabBtnRegister');
-      const loginForm = document.getElementById('loginForm');
-      const registerForm = document.getElementById('registerForm');
-
-      if (tab === 'login') {
-        btnLogin.className = "w-1/2 pb-3 font-semibold text-sm border-b-2 border-indigo-600 text-indigo-600 transition-all";
-        btnRegister.className = "w-1/2 pb-3 font-semibold text-sm border-b-2 border-transparent text-slate-500 hover:text-slate-700 transition-all";
-        loginForm.classList.remove('hidden');
-        registerForm.classList.add('hidden');
-      } else {
-        btnRegister.className = "w-1/2 pb-3 font-semibold text-sm border-b-2 border-indigo-600 text-indigo-600 transition-all";
-        btnLogin.className = "w-1/2 pb-3 font-semibold text-sm border-b-2 border-transparent text-slate-500 hover:text-slate-700 transition-all";
-        loginForm.classList.add('hidden');
-        registerForm.classList.remove('hidden');
-      }
-    }
-
     function togglePasswordVisibility(fieldId) {
       const field = document.getElementById(fieldId);
       field.type = field.type === 'password' ? 'text' : 'password';
@@ -1204,6 +1251,7 @@
       // Auto-trigger fetches
       if (tabId === 'home') refreshHomeStats();
       if (tabId === 'profile') fetchProfile();
+      if (tabId === 'find-ride') handleSearchRides();
       if (tabId === 'vehicles') fetchVehicles();
       if (tabId === 'offer-ride') populateOfferVehicles();
       if (tabId === 'bookings') refreshActiveDemoState();
@@ -1717,18 +1765,44 @@
     // ==========================================
     // 🔍 FIND RIDE METHODS
     // ==========================================
+    function resetSearchFilters() {
+      document.getElementById('searchSrc').value = '';
+      document.getElementById('searchDest').value = '';
+      document.getElementById('searchDate').value = '';
+      document.getElementById('searchSeats').value = '';
+      document.getElementById('searchSort').value = 'earliest';
+      document.getElementById('searchFemaleOnly').checked = false;
+      handleSearchRides();
+    }
+
     async function handleSearchRides() {
       const container = document.getElementById('searchResultsList');
-      container.innerHTML = '<span class="text-xs text-slate-400">Searching commute pools...</span>';
+      container.innerHTML = '<div class="py-12 text-center text-slate-400"><i data-lucide="loader" class="animate-spin h-8 w-8 mx-auto mb-2 text-indigo-400"></i><span class="text-xs font-semibold">Searching commute pools...</span></div>';
+      lucide.createIcons();
 
-      const pickupDate = document.getElementById('searchDate').value;
       const source = document.getElementById('searchSrc').value.trim();
       const destination = document.getElementById('searchDest').value.trim();
+      const pickupDate = document.getElementById('searchDate').value;
+      const minSeats = document.getElementById('searchSeats').value;
+      const sort = document.getElementById('searchSort').value;
+      const femaleOnly = document.getElementById('searchFemaleOnly').checked;
 
       let queryParams = [];
-      if (pickupDate) queryParams.push(`pickupDate=${pickupDate}`);
       if (source) queryParams.push(`source=${encodeURIComponent(source)}`);
       if (destination) queryParams.push(`destination=${encodeURIComponent(destination)}`);
+      if (pickupDate) queryParams.push(`pickupDate=${encodeURIComponent(pickupDate)}`);
+      if (minSeats) queryParams.push(`minSeats=${encodeURIComponent(minSeats)}`);
+      if (femaleOnly) queryParams.push(`femaleOnly=true`);
+
+      if (sort === 'earliest') {
+        queryParams.push('sortBy=pickupAt&sortOrder=asc');
+      } else if (sort === 'latest') {
+        queryParams.push('sortBy=pickupAt&sortOrder=desc');
+      } else if (sort === 'lowest') {
+        queryParams.push('sortBy=pricePerSeat&sortOrder=asc');
+      } else if (sort === 'highest') {
+        queryParams.push('sortBy=pricePerSeat&sortOrder=desc');
+      }
       
       const queryStr = queryParams.length > 0 ? `?${queryParams.join('&')}` : '';
 
@@ -1739,10 +1813,11 @@
         if (json.success && json.data) {
           if (json.data.length === 0) {
             container.innerHTML = `
-              <div class="border border-dashed border-slate-200 bg-white rounded-2xl p-8 text-center text-slate-400">
-                <i data-lucide="info" class="h-10 w-10 mx-auto mb-2 text-slate-300"></i>
-                <p class="text-sm font-semibold">No rides found matching filters</p>
-                <p class="text-xs mt-1">Try expanding keyword match parameters or date values</p>
+              <div class="border border-dashed border-slate-200 bg-white rounded-2xl p-12 text-center text-slate-400 shadow-sm">
+                <i data-lucide="car-front" class="h-12 w-12 mx-auto mb-4 text-slate-300"></i>
+                <h3 class="text-lg font-black text-slate-600 mb-1">No rides found</h3>
+                <p class="text-sm">Try adjusting your filters or search keywords.</p>
+                <button onclick="resetSearchFilters()" class="mt-4 text-indigo-600 font-bold text-xs hover:underline">Clear all filters</button>
               </div>`;
             lucide.createIcons();
             return;
@@ -2441,14 +2516,16 @@
     }
 
     async function handleVerifyVehicle(id, status) {
-      if (!confirm(`Are you sure you want to ${status.toLowerCase()} this vehicle?`)) return;
+      console.log('handleVerifyVehicle called:', id, status);
       try {
+        console.log('Sending PATCH request to', `${API_BASE}/admin/vehicles/${id}/verify`);
         const res = await fetch(`${API_BASE}/admin/vehicles/${id}/verify`, {
           method: 'PATCH',
           headers: getHeaders(),
           body: JSON.stringify({ status })
         });
         const json = await res.json();
+        console.log('Response:', json);
         if (json.success) {
           showToast('Vehicle ' + status.toLowerCase() + ' successfully', 'success');
           fetchAdminVehicles();
@@ -2516,14 +2593,16 @@
     }
 
     async function handleEmployeeStatus(id, status) {
-      if (!confirm(`Are you sure you want to change employee status to ${status}?`)) return;
+      console.log('handleEmployeeStatus called:', id, status);
       try {
+        console.log('Sending PATCH request to', `${API_BASE}/admin/employees/${id}/status`);
         const res = await fetch(`${API_BASE}/admin/employees/${id}/status`, {
           method: 'PATCH',
           headers: getHeaders(),
           body: JSON.stringify({ status })
         });
         const json = await res.json();
+        console.log('Response:', json);
         if (json.success) {
           showToast(`Employee ${status.toLowerCase()} successfully`, 'success');
           fetchAdminEmployees();
@@ -2602,7 +2681,6 @@
                 </td>
                 <td class="p-4 border-b border-slate-100 text-xs font-semibold text-slate-700">
                   ${b.seatsBooked}
-                </td>
                 <td class="p-4 border-b border-slate-100">
                   <span class="text-[10px] font-black uppercase ${statusColor}">${b.status}</span>
                 </td>
@@ -2615,44 +2693,93 @@
       }
     }
 
+    let allAdminReports = [];
+
     async function fetchAdminReports() {
       const container = document.getElementById('demoAdminReportsList');
-      container.innerHTML = '<span class="text-xs text-slate-400">Loading admin violation feed...</span>';
+      if (!container) return;
+      container.innerHTML = '<tr><td colspan="5" class="p-8 text-center text-slate-400 text-sm">Loading admin violation feed...</td></tr>';
 
       try {
         const res = await fetch(`${API_BASE}/reports`, { headers: getHeaders() });
         const json = await res.json();
 
         if (json.success && json.data) {
-          if (json.data.length === 0) {
-            container.innerHTML = '<span class="text-xs text-slate-400">No system reports filed.</span>';
-            return;
-          }
-
-          container.innerHTML = json.data.map(rep => `
-            <div class="border border-slate-200 rounded-xl p-4 bg-slate-50 space-y-3">
-              <div class="flex justify-between items-center">
-                <span class="bg-rose-50 text-rose-600 text-[10px] font-bold px-2 py-0.5 rounded border border-rose-100">${rep.category}</span>
-                <span class="text-xs font-bold ${rep.status === 'RESOLVED' ? 'text-emerald-600' : 'text-amber-500'} uppercase">${rep.status}</span>
-              </div>
-              <p class="text-xs text-slate-700 leading-relaxed">${rep.description}</p>
-              <div class="text-[10px] text-slate-500">
-                Reporter: <b>${rep.reporter.name}</b> (${rep.reporter.email})<br>
-                Reported: <b>${rep.reportedUser.name}</b> (${rep.reportedUser.email})
-              </div>
-              <div class="flex gap-2 pt-2 border-t border-slate-100">
-                <button onclick="handleResolveReport('${rep.id}', 'REVIEWING')" class="bg-amber-500 hover:bg-amber-600 text-white font-bold text-[10px] px-3 py-1.5 rounded" ${rep.status === 'REVIEWING' || rep.status === 'RESOLVED' ? 'disabled' : ''}>Under Review</button>
-                <button onclick="handleResolveReport('${rep.id}', 'RESOLVED')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[10px] px-3 py-1.5 rounded" ${rep.status === 'RESOLVED' ? 'disabled' : ''}>Mark Resolved</button>
-              </div>
-            </div>
-          `).join('');
+          allAdminReports = json.data;
+          renderAdminReports(allAdminReports);
         }
       } catch (err) {
-        container.innerHTML = '<span class="text-xs text-rose-500">Admin auth failure loading incident feed.</span>';
+        console.error('Failed to fetch admin reports:', err);
       }
     }
 
-    async function handleResolveReport(reportId, status) {
+    function renderAdminReports(reports) {
+      const container = document.getElementById('demoAdminReportsList');
+      if (!container) return;
+      if (reports.length === 0) {
+        container.innerHTML = '<tr><td colspan="5" class="p-12 text-center text-slate-400 text-sm font-medium">No system reports found.</td></tr>';
+        return;
+      }
+
+      container.innerHTML = reports.map(rep => {
+        let statusBadge = rep.status === 'RESOLVED' ? 'bg-emerald-100/50 text-emerald-700 border-emerald-200' :
+                          rep.status === 'REVIEWING' ? 'bg-indigo-100/50 text-indigo-700 border-indigo-200' :
+                          'bg-amber-100/50 text-amber-700 border-amber-200';
+                          
+        let categoryColor = rep.category === 'SAFETY' || rep.category === 'HARASSMENT' ? 'text-rose-600 bg-rose-50' : 
+                            'text-slate-600 bg-slate-100';
+
+        return `
+          <tr class="hover:bg-white/40 transition-colors group">
+            <td class="p-4 align-top w-2/5">
+              <p class="text-sm text-slate-700 font-medium leading-relaxed">${rep.description}</p>
+              <p class="text-[10px] text-slate-400 mt-2 font-mono">${new Date(rep.createdAt).toLocaleString()}</p>
+            </td>
+            <td class="p-4 align-top whitespace-nowrap">
+              <div class="flex items-center gap-2">
+                <div class="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-600">
+                  ${rep.reporter?.name?.charAt(0).toUpperCase() || '?'}
+                </div>
+                <div>
+                  <p class="text-xs font-bold text-slate-800">${rep.reporter?.name || 'Unknown'}</p>
+                  <p class="text-[10px] text-slate-500">${rep.reporter?.employeeId || 'N/A'}</p>
+                </div>
+              </div>
+            </td>
+            <td class="p-4 align-top whitespace-nowrap">
+              <span class="${categoryColor} text-[10px] font-black px-2.5 py-1 rounded-md tracking-wide uppercase">${rep.category}</span>
+            </td>
+            <td class="p-4 align-top whitespace-nowrap">
+              <span class="${statusBadge} border text-[10px] font-black px-2.5 py-1 rounded-md tracking-wide uppercase">${rep.status}</span>
+            </td>
+            <td class="p-4 align-top text-right whitespace-nowrap">
+              ${rep.status !== 'RESOLVED' ? `
+                <div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  ${rep.status === 'PENDING' ? 
+                    `<button onclick="updateDemoReportStatus('${rep.id}', 'REVIEWING')" class="text-xs font-bold px-3 py-1.5 rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-colors">Review</button>` : ''
+                  }
+                  <button onclick="updateDemoReportStatus('${rep.id}', 'RESOLVED')" class="text-xs font-bold px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-colors">Resolve</button>
+                </div>
+              ` : '<span class="text-xs text-slate-400 font-medium">Closed</span>'}
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function filterAdminReports() {
+      const q = document.getElementById('reportSearch').value.toLowerCase();
+      const status = document.getElementById('reportFilterStatus').value;
+
+      const filtered = allAdminReports.filter(rep => {
+        const matchQ = rep.description.toLowerCase().includes(q) || (rep.reporter?.name || '').toLowerCase().includes(q);
+        const matchStatus = status === 'ALL' || rep.status === status;
+        return matchQ && matchStatus;
+      });
+      renderAdminReports(filtered);
+    }
+
+    async function updateDemoReportStatus(reportId, status) {
       try {
         const res = await fetch(`${API_BASE}/reports/${reportId}/status`, {
           method: 'PATCH',
