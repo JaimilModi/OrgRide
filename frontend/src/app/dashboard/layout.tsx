@@ -6,7 +6,7 @@ import { ToastProvider } from "@/components/ui/Toast";
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   return (
     <ToastProvider>
-      <div className="flex min-h-screen bg-bg-page text-text-main font-sans selection:bg-primary-200">
+      <div className="flex min-h-screen bg-[#F7F9FC] text-[#10233F] font-sans selection:bg-[#2563EB]/20 selection:text-[#10233F]">
         <Sidebar />
         <div className="flex-1 flex flex-col min-w-0">
           <TopBar />

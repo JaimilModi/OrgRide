@@ -1,47 +1,83 @@
-import { ArrowRight } from "lucide-react";
+"use client";
+
+import { motion } from "framer-motion";
 import Link from "next/link";
-import HeroVisual from "./HeroVisual";
+import { ChevronRight } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export default function Hero() {
+  const shinyStyle = {
+    backgroundImage: "linear-gradient(to right, var(--landing-blue) 0%, var(--landing-cyan) 50%, var(--landing-blue) 100%)",
+    backgroundSize: "200% auto",
+    WebkitBackgroundClip: "text",
+    color: "transparent",
+    WebkitTextFillColor: "transparent",
+  };
+
   return (
-    <section className="relative min-h-screen flex items-center pt-[4.5rem] overflow-hidden bg-gradient-to-br from-primary-50 via-surface to-surface">
-      <div className="relative z-10 mx-auto grid max-w-7xl gap-12 px-6 py-16 lg:grid-cols-[1.1fr_1fr] lg:items-center lg:gap-16 lg:px-10 lg:py-24">
-        {/* Text column */}
-        <div className="flex flex-col gap-6 max-w-xl lg:max-w-none">
-          <h1 className="text-[clamp(2.5rem,5vw,4rem)] font-extrabold leading-[1.1] tracking-tight text-primary-950">
-            Share your commute with people you already work with.
-          </h1>
+    <section className="pt-24 md:pt-36 pb-20 text-center flex flex-col items-center relative z-10 px-6">
+      
+      <motion.h1 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+        className="text-[40px] md:text-7xl lg:text-[84px] font-bold tracking-tight leading-[0.95] max-w-4xl flex flex-col items-center"
+      >
+        <span className="text-[var(--landing-text-primary)]">Share your commute.</span>
+        <span className="animate-hero-gradient inline-block mt-2 lg:mt-4" style={shinyStyle}>
+          With your colleagues.
+        </span>
+      </motion.h1>
 
-          <p className="text-[clamp(1rem,1.5vw,1.25rem)] leading-relaxed text-neutral-600 max-w-lg">
-            Find a ride or offer available seats to verified colleagues travelling along your route.
-          </p>
+      <motion.p
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4, duration: 0.8 }}
+        className="mt-8 text-[var(--landing-text-secondary)] max-w-[500px] text-lg leading-relaxed font-medium"
+      >
+        OrgRide is the verified workplace mobility network. Connect with people from your organization traveling the same route, reduce emissions, and split costs effortlessly.
+      </motion.p>
 
-          <div className="flex flex-wrap gap-4 pt-4">
-            <Link
-              href="/register/rider"
-              className="inline-flex items-center justify-center px-8 py-3.5 text-base font-semibold rounded-xl bg-accent-500 text-primary-950 hover:bg-accent-400 shadow-sm transition-colors"
-            >
-              Find a Ride
-            </Link>
-            <Link
-              href="/register/driver"
-              className="inline-flex items-center justify-center px-8 py-3.5 text-base font-semibold rounded-xl border-2 border-primary-200 text-primary-800 hover:border-primary-400 hover:bg-primary-50 transition-colors"
-            >
-              Offer a Ride
-            </Link>
-          </div>
-          <div className="pt-2">
-            <p className="text-sm text-neutral-500 font-medium">
-              Already registered? <Link href="/signin" className="text-primary-700 hover:underline">Sign In</Link>
-            </p>
-          </div>
-        </div>
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.6, duration: 0.6 }}
+        className="mt-12 flex flex-col sm:flex-row items-center gap-4"
+      >
+        <Link
+          href="/register/rider"
+          className={cn(
+            "group flex items-center justify-center gap-2 rounded-full",
+            "bg-[var(--landing-blue)] text-white hover:text-white focus:text-white font-bold text-base px-8 py-4",
+            "transition-all hover:bg-blue-700 active:scale-[0.98] shadow-md hover:shadow-lg w-full sm:w-auto focus:ring-2 focus:ring-offset-2 focus:ring-[var(--landing-blue)]"
+          )}
+        >
+          Find a Ride
+          <ChevronRight size={18} className="group-hover:translate-x-0.5 transition-transform text-white group-hover:text-white" />
+        </Link>
+        <Link
+          href="/register/driver"
+          className={cn(
+            "group flex items-center justify-center gap-2 rounded-full",
+            "bg-[var(--landing-surface)] text-[var(--landing-text-primary)] font-bold text-base px-8 py-4 border border-[var(--landing-border-strong)]",
+            "transition-all hover:bg-gray-50 hover:border-gray-400 active:scale-[0.98] w-full sm:w-auto shadow-sm"
+          )}
+        >
+          Offer a Ride
+        </Link>
+      </motion.div>
 
-        {/* Visual column */}
-        <div className="relative flex items-center justify-center lg:justify-end">
-          <HeroVisual />
-        </div>
-      </div>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.8, duration: 1 }}
+        className="mt-8 flex items-center gap-4 text-xs font-semibold text-[var(--landing-text-muted)] uppercase tracking-widest"
+      >
+        <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-[var(--landing-green)]" /> Enterprise Verified</span>
+        <span className="w-1 h-1 rounded-full bg-[var(--landing-border-strong)]" />
+        <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-[var(--landing-cyan)]" /> AI Matched</span>
+      </motion.div>
+      
     </section>
   );
 }

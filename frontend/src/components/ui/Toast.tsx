@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, ReactNode } from "react";
 import { CheckCircle2, XCircle, Info } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 type ToastType = "success" | "error" | "info";
 
@@ -31,22 +32,21 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext.Provider value={{ showToast }}>
       {children}
-      <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2">
+      <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-3 font-sans">
         {toasts.map((toast) => (
           <div
             key={toast.id}
-            className={`flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg border min-w-[300px] animate-in slide-in-from-bottom-5 fade-in duration-300 ${
-              toast.type === "success"
-                ? "bg-primary-50 border-primary-200 text-primary-900"
-                : toast.type === "error"
-                ? "bg-danger-sub border-danger-main/20 text-danger-main"
-                : "bg-surface-sub border-border-subtle text-text-main"
-            }`}
+            className={cn(
+              "flex items-center gap-3 px-5 py-4 rounded-xl shadow-xl border min-w-[300px] animate-in slide-in-from-bottom-5 fade-in duration-300",
+              toast.type === "success" && "bg-white border-[#16A085]/20 text-[#10233F]",
+              toast.type === "error" && "bg-white border-[#DC2626]/20 text-[#10233F]",
+              toast.type === "info" && "bg-white border-[#2563EB]/20 text-[#10233F]"
+            )}
           >
-            {toast.type === "success" && <CheckCircle2 className="w-5 h-5 text-primary-600" />}
-            {toast.type === "error" && <XCircle className="w-5 h-5 text-danger-main" />}
-            {toast.type === "info" && <Info className="w-5 h-5 text-primary-800" />}
-            <span className="font-medium text-sm">{toast.message}</span>
+            {toast.type === "success" && <CheckCircle2 className="w-5 h-5 text-[#16A085] shrink-0" />}
+            {toast.type === "error" && <XCircle className="w-5 h-5 text-[#DC2626] shrink-0" />}
+            {toast.type === "info" && <Info className="w-5 h-5 text-[#2563EB] shrink-0" />}
+            <span className="font-semibold text-sm tracking-wide">{toast.message}</span>
           </div>
         ))}
       </div>

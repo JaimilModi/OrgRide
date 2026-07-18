@@ -1,35 +1,72 @@
 @import "tailwindcss";
 
 /* ============================================================
-   OrgRide Design Tokens — Tailwind CSS 4 Theme
+   OrgRide Global Design System — Premium Light Theme
    ============================================================ */
 @theme inline {
-  /* Primary — Deep forest */
-  --color-primary-950: #041f1c;
-  --color-primary-900: #062E2A; /* Deep forest */
-  --color-primary-800: #0B443C; /* Secondary forest */
-  --color-primary-700: #105c51;
-  --color-primary-600: #147365;
-  --color-primary-500: #16C79A; /* Primary emerald */
-  --color-primary-400: #25D9A5; /* Bright mint accent */
-  --color-primary-300: #54e3bb;
-  --color-primary-200: #9ff0d8;
-  --color-primary-100: #DDF8F0; /* Soft mint */
-  --color-primary-50: #effcf8;
+  /* --- OrgRide Light Semantic Tokens --- */
+  --color-or-bg-page:        #F7F9FC;
+  --color-or-bg-sidebar:     #FFFFFF;
+  --color-or-surface:        #FFFFFF;
+  --color-or-surface-soft:   #EEF5FF;
+  --color-or-surface-sec:    #F1F5F9;
 
-  /* Surfaces & Backgrounds */
-  --color-bg-page: #F4F8F7;
-  --color-surface-main: #FFFFFF;
-  --color-surface-sub: #ECF4F2;
-  --color-border-subtle: #DCE8E5;
+  --color-or-text-primary:   #10233F;
+  --color-or-text-secondary: #475569;
+  --color-or-text-muted:     #64748B;
+  --color-or-text-inverse:   #FFFFFF;
 
-  /* Text */
-  --color-text-main: #102A27;
-  --color-text-sub: #61716E;
+  --color-or-primary:        #2563EB;
+  --color-or-primary-hover:  #1D4ED8;
+  --color-or-primary-soft:   #EEF5FF;
+  --color-or-accent:         #0891B2;
 
-  /* Danger */
-  --color-danger-main: #e03131;
-  --color-danger-sub: #ffeeee;
+  --color-or-success:        #16A085;
+  --color-or-success-soft:   #F0FDF9;
+  --color-or-warning:        #D97706;
+  --color-or-warning-soft:   #FFFBEB;
+  --color-or-error:          #DC2626;
+  --color-or-error-soft:     #FEF2F2;
+
+  --color-or-border:         #E2E8F0;
+  --color-or-border-strong:  #CBD5E1;
+
+  /* --- Legacy tokens kept for any residual references --- */
+  --color-brand-primary: #18F2C2;
+  --color-brand-secondary: #42C7FF;
+  --color-bg-page: #F7F9FC;
+  --color-surface-base: #FFFFFF;
+  --color-surface-elevated: #F1F5F9;
+  --color-border-subtle: #E2E8F0;
+  --color-text-primary: #10233F;
+  --color-text-muted: #64748B;
+  --color-success: #16A085;
+  --color-error: #DC2626;
+  --color-warning: #D97706;
+
+  /* Legacy color scale (kept for Tailwind bg-primary-* utilities) */
+  --color-primary-950: #040A10;
+  --color-primary-900: #07111B;
+  --color-primary-800: #0E1726;
+  --color-primary-700: #121C2D;
+  --color-primary-600: #1A2639;
+  --color-primary-500: #18F2C2;
+  --color-primary-400: #42C7FF;
+  --color-primary-300: #7AD6FF;
+  --color-primary-200: #B3E8FF;
+  --color-primary-100: #D9F4FF;
+  --color-primary-50:  #EDFAFF;
+
+  --color-accent-900: #0A2633;
+  --color-accent-800: #103B4C;
+  --color-accent-700: #175466;
+  --color-accent-600: #207180;
+  --color-accent-500: #42C7FF;
+  --color-accent-400: #66D4FF;
+  --color-accent-300: #8CE0FF;
+  --color-accent-200: #B3EBFF;
+  --color-accent-100: #D9F5FF;
+  --color-accent-50:  #EDFAFF;
 
   /* Fonts */
   --font-sans: var(--font-inter);
@@ -44,20 +81,31 @@ html {
 }
 
 body {
-  background-color: var(--color-bg-page);
-  color: var(--color-text-main);
+  background-color: #F7F9FC;
+  color: #10233F;
   font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
 }
 
-/* Removed excessive route animations for cleaner hackathon presentation */
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
+
+/* Hide Scrollbar */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+

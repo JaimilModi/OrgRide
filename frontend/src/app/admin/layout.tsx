@@ -3,9 +3,11 @@
 import { ReactNode, useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { getUser, logout } from "@/lib/api";
 import { ToastProvider } from "@/components/ui/Toast";
-import { LayoutDashboard, Building2, ShieldAlert, LogOut, Hexagon, ShieldCheck } from "lucide-react";
+import { LayoutDashboard, Building2, ShieldAlert, LogOut, ShieldCheck } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
   const router = useRouter();
@@ -28,7 +30,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   }, [router]);
 
   if (loading) {
-    return <div className="min-h-screen bg-bg-page flex items-center justify-center">Loading Admin Portal...</div>;
+    return <div className="min-h-screen bg-[#F7F9FC] text-[#64748B] flex items-center justify-center font-bold">Loading Admin Portal...</div>;
   }
 
   const links = [
@@ -48,36 +50,41 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 
   return (
     <ToastProvider>
-      <div className="flex min-h-screen bg-bg-page text-text-main font-sans selection:bg-primary-200">
+      <div className="flex min-h-screen bg-[#F7F9FC] text-[#10233F] font-sans selection:bg-[#2563EB]/20 selection:text-[#10233F]">
         
         {/* Admin Sidebar */}
-        <aside className="w-[260px] bg-neutral-900 text-white flex flex-col min-h-screen sticky top-0 hidden md:flex shadow-2xl z-20">
-          <div className="p-8 pb-4">
-            <Link href="/admin/dashboard" className="text-[22px] font-extrabold tracking-tight text-white flex items-center gap-3">
-              <div className="w-10 h-10 bg-primary-500 rounded-xl flex items-center justify-center shadow-lg">
-                <Hexagon size={24} className="text-primary-900 fill-primary-100" />
-              </div>
-              OrgRide
+        <aside className="w-[260px] bg-[#F8FAFC] border-r border-[#E2E8F0] text-[#10233F] flex flex-col min-h-screen sticky top-0 hidden md:flex z-20 shadow-sm">
+          <div className="p-6 pb-4">
+            <Link href="/admin/dashboard" className="flex items-center hover:opacity-80 transition-opacity group mb-3">
+              <Image
+                src="/branding/orgride-logo-transparent.png"
+                alt="OrgRide"
+                width={120}
+                height={48}
+                className="h-9 w-auto object-contain"
+                priority
+              />
             </Link>
-            <div className="mt-3 inline-flex items-center gap-1.5 bg-neutral-800 text-primary-400 px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-widest">
+            <div className="inline-flex items-center gap-1.5 bg-[#FEF3C7] border border-[#FDE68A] text-[#D97706] px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-widest shadow-sm">
               <ShieldCheck size={14} /> Admin Portal
             </div>
           </div>
 
-          <nav className="flex-1 px-4 mt-8 space-y-2">
+          <nav className="flex-1 px-4 mt-6 space-y-1">
             {links.map((link) => {
               const isActive = pathname === link.href;
               return (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-200 font-semibold text-sm ${
+                  className={cn(
+                    "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 font-semibold text-sm",
                     isActive
-                      ? "bg-neutral-800 text-white shadow-inner"
-                      : "text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-200"
-                  }`}
+                      ? "bg-[#EEF5FF] text-[#2563EB] border-l-[3px] border-[#2563EB] pl-3"
+                      : "text-[#64748B] hover:bg-white hover:text-[#10233F] hover:shadow-sm"
+                  )}
                 >
-                  <div className={`${isActive ? "text-primary-400" : "text-neutral-500"}`}>
+                  <div className={cn("transition-colors", isActive ? "text-[#2563EB]" : "text-[#64748B]")}>
                     {link.icon}
                   </div>
                   {link.name}
@@ -86,21 +93,21 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
             })}
           </nav>
 
-          <div className="p-6 border-t border-neutral-800">
+          <div className="p-4 border-t border-[#E2E8F0]">
             <div className="flex items-center gap-3 mb-4 px-2">
-              <div className="w-8 h-8 rounded-full bg-neutral-800 flex items-center justify-center text-primary-400 font-bold text-xs">
+              <div className="w-8 h-8 rounded-full bg-[#FEF3C7] border border-[#FDE68A] flex items-center justify-center text-[#D97706] font-bold text-xs shadow-sm">
                 {admin?.name?.charAt(0) || "A"}
               </div>
               <div className="flex flex-col overflow-hidden">
-                <span className="text-sm font-bold text-white truncate">{admin?.name}</span>
-                <span className="text-[10px] text-neutral-400 uppercase">{admin?.employeeId}</span>
+                <span className="text-sm font-bold text-[#10233F] truncate">{admin?.name}</span>
+                <span className="text-[10px] text-[#D97706] font-bold uppercase">{admin?.employeeId}</span>
               </div>
             </div>
             <button
               onClick={logout}
-              className="w-full flex items-center gap-3 px-4 py-3.5 text-neutral-400 hover:bg-neutral-800 hover:text-white rounded-xl transition-colors font-semibold text-sm group"
+              className="w-full flex items-center gap-3 px-4 py-3 text-[#DC2626] hover:bg-red-50 hover:border-red-100 border border-transparent rounded-xl transition-all font-semibold text-sm group"
             >
-              <LogOut size={20} strokeWidth={2.5} className="group-hover:text-danger-main transition-colors" />
+              <LogOut size={18} strokeWidth={2.5} />
               Sign Out
             </button>
           </div>
@@ -109,13 +116,13 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
         {/* Admin Main Content */}
         <div className="flex-1 flex flex-col min-w-0">
           
-          <header className="h-[88px] bg-bg-page/80 backdrop-blur-md border-b border-border-subtle flex items-center justify-between px-6 sm:px-8 sticky top-0 z-10">
+          <header className="h-[72px] bg-white border-b border-[#E2E8F0] flex items-center justify-between px-6 sm:px-8 sticky top-0 z-10 shadow-sm">
             <div>
-              <h1 className="text-[22px] font-bold text-text-main tracking-tight">{title}</h1>
-              {subtitle && <p className="text-sm text-text-sub mt-0.5 font-medium">{subtitle}</p>}
+              <h1 className="text-[20px] font-extrabold text-[#10233F] tracking-tight leading-tight">{title}</h1>
+              {subtitle && <p className="text-sm text-[#64748B] font-medium">{subtitle}</p>}
             </div>
             <div className="flex items-center gap-4">
-              <span className="bg-primary-100 text-primary-800 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 border border-primary-200">
+              <span className="bg-[#FEF3C7] text-[#D97706] px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 border border-[#FDE68A] shadow-sm">
                 <ShieldCheck size={16} /> Admin Authenticated
               </span>
             </div>

@@ -5,6 +5,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { registerEmployee } from "@/lib/api";
 import { FileUpload } from "@/components/ui/FileUpload";
+import { Eye, EyeOff } from "lucide-react";
+import Image from "next/image";
+import { cn } from "@/lib/utils";
 
 export default function DriverRegistrationPage() {
   const router = useRouter();
@@ -14,7 +17,7 @@ export default function DriverRegistrationPage() {
   const [showPassword, setShowPassword] = useState(false);
 
   const [formData, setFormData] = useState({
-    // Step 1: Employee (Employee ID removed as requested)
+    // Step 1: Employee
     name: "",
     email: "",
     phone: "",
@@ -39,7 +42,6 @@ export default function DriverRegistrationPage() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    // Normalize vehicle number spacing
     if (name === "vehicleNumber") {
       setFormData(prev => ({ ...prev, [name]: value.replace(/\s+/g, "").toUpperCase() }));
     } else {
@@ -71,11 +73,10 @@ export default function DriverRegistrationPage() {
     try {
       await registerEmployee({
         ...formData,
-        // Send vehicle photo and rc photo as fake URLs since upload endpoint requires token
         vehiclePhoto: "backend-gap-missing-upload",
         rcPhoto: "backend-gap-missing-upload"
       });
-      router.push("/dashboard"); 
+      router.push("/signin"); 
     } catch (err: any) {
       setError(err.message || "Failed to register.");
     } finally {
@@ -83,112 +84,141 @@ export default function DriverRegistrationPage() {
     }
   };
 
+  const inputClass = "w-full px-4 py-3 rounded-xl bg-white border border-[#CBD5E1] text-[#10233F] focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/20 outline-none transition-all placeholder:text-[#94A3B8] font-medium shadow-sm";
+  const labelClass = "block text-sm font-semibold text-[#475569] mb-1.5";
+
   return (
-    <div className="min-h-[100dvh] flex flex-col lg:flex-row bg-white w-full">
-      {/* Left Panel - Branding */}
-      <div className="hidden lg:flex lg:w-[40%] bg-primary-950 flex-col justify-between p-10 lg:p-12 relative overflow-hidden lg:sticky lg:top-0 lg:h-[100dvh]">
-        {/* Subtle background element matching rider/signin system */}
-        <div className="absolute inset-0 pointer-events-none opacity-20" aria-hidden="true">
-          <svg className="w-full h-full" viewBox="0 0 800 800" fill="none">
-            <path d="M-100 600 C200 400, 400 700, 900 300" stroke="#4eeab5" strokeWidth="4" />
-          </svg>
-        </div>
+    <div className="min-h-[100dvh] flex flex-col lg:flex-row bg-[#F7F9FC] w-full font-sans">
+      {/* Left Panel — Premium Illustration */}
+      <div className="hidden lg:flex lg:w-[40%] bg-[#EEF5FF] flex-col justify-between p-10 lg:p-12 relative overflow-hidden lg:sticky lg:top-0 lg:h-[100dvh] border-r border-[#E2E8F0]">
+        <div className="absolute top-[-5%] right-[-5%] w-96 h-96 bg-[#2563EB]/8 rounded-full blur-[100px] pointer-events-none" />
+        <div className="absolute bottom-[5%] left-[-5%] w-80 h-80 bg-[#0891B2]/8 rounded-full blur-[80px] pointer-events-none" />
 
         <div className="relative z-10">
-          <Link href="/" className="flex items-center gap-2">
-            <svg viewBox="0 0 32 32" className="h-7 w-7 text-white" fill="none">
-              <circle cx="16" cy="8" r="3" fill="currentColor" className="text-accent-500" />
-              <path d="M6 26 C9 16,13 10,16 10 C19 10,23 16,26 26" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
-            </svg>
-            <span className="text-xl font-bold text-white tracking-tight">OrgRide</span>
+          <Link href="/" className="flex items-center hover:opacity-80 transition-opacity">
+            <Image
+              src="/branding/orgride-logo-transparent.png"
+              alt="OrgRide"
+              width={140}
+              height={56}
+              className="h-10 w-auto object-contain"
+              priority
+            />
           </Link>
         </div>
-        
-        <div className="relative z-10 max-w-sm">
-          <h1 className="text-3xl font-bold text-white mb-3 leading-tight">
-            Drive together. Commute smarter.
-          </h1>
-          <p className="text-base text-primary-200">
-            Offer available seats and share your daily commute with verified colleagues.
-          </p>
+
+        <div className="relative z-10 flex flex-col items-center justify-center flex-1 py-8">
+          <div className="w-full max-w-xs mx-auto">
+            <Image
+              src="/images/auth-illustration.png"
+              alt="OrgRide carpooling illustration"
+              width={400}
+              height={400}
+              className="w-full h-auto drop-shadow-lg"
+              priority
+            />
+          </div>
+          <div className="mt-8 text-center max-w-xs">
+            <h1 className="text-2xl font-extrabold text-[#10233F] mb-3 leading-snug tracking-tight">
+              Drive together.<br />
+              <span className="text-[#2563EB]">Commute smarter.</span>
+            </h1>
+            <p className="text-[#475569] font-medium leading-relaxed text-sm">
+              Offer available seats and share your daily commute with verified colleagues.
+            </p>
+          </div>
         </div>
-        
-        <div className="relative z-10 text-primary-400 text-xs">
-          &copy; {new Date().getFullYear()} OrgRide.
+
+        <div className="relative z-10 flex items-center gap-2 text-xs font-semibold text-[#64748B] uppercase tracking-widest">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#0891B2]" />
+          Driver Onboarding
         </div>
       </div>
 
-      {/* Right Panel - Form */}
-      <div className="w-full lg:w-[60%] flex flex-col items-center justify-center p-6 lg:p-12 min-h-[100dvh] lg:min-h-0 py-12">
-        <div className="w-full max-w-[800px]">
-          <div className="lg:hidden mb-6 flex justify-center">
-            <Link href="/" className="flex items-center gap-2">
-              <svg viewBox="0 0 32 32" className="h-7 w-7 text-primary-950" fill="none">
-                <circle cx="16" cy="8" r="3" fill="currentColor" className="text-accent-500" />
-                <path d="M6 26 C9 16,13 10,16 10 C19 10,23 16,26 26" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
-              </svg>
-              <span className="text-xl font-bold text-primary-950 tracking-tight">OrgRide</span>
+      {/* Right Panel — Form */}
+      <div className="w-full lg:w-[60%] flex flex-col items-center justify-center p-6 lg:p-12 min-h-[100dvh] lg:min-h-0 py-12 bg-[#F7F9FC]">
+        <div className="w-full max-w-[800px] bg-white p-8 md:p-10 rounded-3xl border border-[#E2E8F0] shadow-xl shadow-slate-100/50">
+          <div className="lg:hidden mb-8 flex justify-center">
+            <Link href="/">
+              <Image
+                src="/branding/orgride-logo-transparent.png"
+                alt="OrgRide"
+                width={140}
+                height={56}
+                className="h-9 w-auto object-contain"
+              />
             </Link>
           </div>
 
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-2xl lg:text-3xl font-extrabold text-primary-950">Create your Driver account</h2>
-            <span className="text-sm font-semibold text-accent-700 bg-accent-100 px-3 py-1 rounded-full whitespace-nowrap ml-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-2 gap-4">
+            <h2 className="text-2xl lg:text-3xl font-extrabold text-[#10233F]">Create Driver Account</h2>
+            <span className="text-xs font-bold text-[#2563EB] bg-[#EEF5FF] border border-[#BFDBFE] px-3 py-1.5 rounded-full whitespace-nowrap uppercase tracking-wider">
               Step {step} of 2
             </span>
           </div>
+          <p className="text-[#64748B] font-medium mb-8">
+            {step === 1 ? "Your personal and account details" : "Your vehicle information"}
+          </p>
+
+          {/* Step progress */}
+          <div className="flex gap-2 mb-8">
+            <div className={cn("flex-1 h-1.5 rounded-full transition-all", step >= 1 ? "bg-[#2563EB]" : "bg-[#E2E8F0]")} />
+            <div className={cn("flex-1 h-1.5 rounded-full transition-all", step >= 2 ? "bg-[#2563EB]" : "bg-[#E2E8F0]")} />
+          </div>
 
           {error && (
-            <div className="mb-6 p-4 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">
-              {error}
+            <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm font-medium flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" /> {error}
             </div>
           )}
 
           {step === 1 ? (
             <form onSubmit={handleNextStep} className="space-y-6 max-w-2xl">
-              {/* Employee Account Fields */}
-              <div className="grid sm:grid-cols-2 gap-6">
+              <div className="grid sm:grid-cols-2 gap-5">
                 <div>
-                  <label className="block text-sm font-semibold text-primary-900 mb-1.5" htmlFor="name">
+                  <label className={labelClass} htmlFor="name">
                     Full Name <span className="text-red-500 ml-0.5">*</span>
                   </label>
                   <input
                     id="name" name="name" type="text" required
                     value={formData.name} onChange={handleChange}
-                    className="w-full px-4 py-2.5 rounded-lg border border-neutral-300 focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20 outline-none transition-all"
+                    className={inputClass}
+                    placeholder="John Smith"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-primary-900 mb-1.5" htmlFor="email">
+                  <label className={labelClass} htmlFor="email">
                     Work Email <span className="text-red-500 ml-0.5">*</span>
                   </label>
                   <input
                     id="email" name="email" type="email" required
                     value={formData.email} onChange={handleChange}
-                    className="w-full px-4 py-2.5 rounded-lg border border-neutral-300 focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20 outline-none transition-all"
+                    className={inputClass}
+                    placeholder="john@company.com"
                   />
                 </div>
               </div>
 
-              <div className="grid sm:grid-cols-2 gap-6">
+              <div className="grid sm:grid-cols-2 gap-5">
                 <div>
-                  <label className="block text-sm font-semibold text-primary-900 mb-1.5" htmlFor="phone">
+                  <label className={labelClass} htmlFor="phone">
                     Phone Number <span className="text-red-500 ml-0.5">*</span>
                   </label>
                   <input
                     id="phone" name="phone" type="tel" required
                     value={formData.phone} onChange={handleChange}
-                    className="w-full px-4 py-2.5 rounded-lg border border-neutral-300 focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20 outline-none transition-all"
+                    className={inputClass}
+                    placeholder="+91 98765 43210"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-primary-900 mb-1.5" htmlFor="gender">
+                  <label className={labelClass} htmlFor="gender">
                     Gender <span className="text-red-500 ml-0.5">*</span>
                   </label>
                   <select
                     id="gender" name="gender" required
                     value={formData.gender} onChange={handleChange}
-                    className="w-full px-4 py-2.5 rounded-lg border border-neutral-300 focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20 outline-none transition-all bg-white"
+                    className={cn(inputClass, "appearance-none cursor-pointer")}
                   >
                     <option value="MALE">Male</option>
                     <option value="FEMALE">Female</option>
@@ -197,223 +227,227 @@ export default function DriverRegistrationPage() {
                 </div>
               </div>
 
-              <div className="grid sm:grid-cols-2 gap-6">
+              <div className="grid sm:grid-cols-2 gap-5">
                 <div>
-                  <label className="block text-sm font-semibold text-primary-900 mb-1.5" htmlFor="password">
+                  <label className={labelClass} htmlFor="password">
                     Password <span className="text-red-500 ml-0.5">*</span>
                   </label>
                   <input
                     id="password" name="password" type={showPassword ? "text" : "password"} required
                     value={formData.password} onChange={handleChange}
-                    className="w-full px-4 py-2.5 rounded-lg border border-neutral-300 focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20 outline-none transition-all"
+                    className={inputClass}
+                    placeholder="Min. 8 characters"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-primary-900 mb-1.5" htmlFor="confirmPassword">
+                  <label className={labelClass} htmlFor="confirmPassword">
                     Confirm Password <span className="text-red-500 ml-0.5">*</span>
                   </label>
                   <input
                     id="confirmPassword" name="confirmPassword" type={showPassword ? "text" : "password"} required
                     value={formData.confirmPassword} onChange={handleChange}
-                    className="w-full px-4 py-2.5 rounded-lg border border-neutral-300 focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20 outline-none transition-all"
+                    className={inputClass}
+                    placeholder="Repeat password"
                   />
                 </div>
               </div>
               
-              <div className="flex justify-end">
+              <div className="flex justify-end pt-1">
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="text-xs text-neutral-500 hover:text-accent-700 font-medium -mt-4"
+                  className="text-xs text-[#64748B] hover:text-[#2563EB] font-semibold transition-colors flex items-center gap-1"
                 >
+                  {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
                   {showPassword ? "Hide Passwords" : "Show Passwords"}
                 </button>
               </div>
 
               <button
                 type="submit"
-                className="w-full py-3.5 px-4 bg-accent-500 hover:bg-accent-400 text-primary-950 font-bold rounded-lg shadow-sm hover:shadow transition-all"
+                className={cn(
+                  "w-full py-3.5 px-4 rounded-xl font-bold text-white transition-all",
+                  "bg-[#2563EB] hover:bg-[#1D4ED8] shadow-md hover:shadow-lg",
+                  "active:scale-[0.98] focus:ring-2 focus:ring-offset-2 focus:ring-[#2563EB]"
+                )}
               >
-                Next: Vehicle Details
+                Next: Vehicle Details →
               </button>
             </form>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-6 max-w-3xl">
-              {/* Vehicle Fields */}
-              <div className="grid sm:grid-cols-2 gap-6">
+              <div className="grid sm:grid-cols-2 gap-5">
                 <div>
-                  <label className="block text-sm font-semibold text-primary-900 mb-1.5" htmlFor="vehicleNumber">
+                  <label className={labelClass} htmlFor="vehicleNumber">
                     Vehicle Number <span className="text-red-500 ml-0.5">*</span>
                   </label>
                   <input
                     id="vehicleNumber" name="vehicleNumber" type="text" required
                     value={formData.vehicleNumber} onChange={handleChange}
-                    className="w-full px-4 py-2.5 rounded-lg border border-neutral-300 focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20 outline-none transition-all uppercase"
+                    placeholder="GJ01XX1234"
+                    className={cn(inputClass, "uppercase")}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-primary-900 mb-1.5" htmlFor="type">
+                  <label className={labelClass} htmlFor="type">
                     Vehicle Type <span className="text-red-500 ml-0.5">*</span>
                   </label>
                   <select
                     id="type" name="type" required
                     value={formData.type} onChange={handleChange}
-                    className="w-full px-4 py-2.5 rounded-lg border border-neutral-300 focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20 outline-none transition-all bg-white"
+                    className={cn(inputClass, "appearance-none cursor-pointer")}
                   >
-                    <option value="" disabled>Select Type</option>
-                    <option value="HATCHBACK">Hatchback</option>
                     <option value="SEDAN">Sedan</option>
                     <option value="SUV">SUV</option>
-                    <option value="MUV">MUV</option>
-                    <option value="OTHER">Other</option>
+                    <option value="HATCHBACK">Hatchback</option>
+                    <option value="TWO_WHEELER">Two Wheeler</option>
                   </select>
                 </div>
               </div>
 
-              <div className="grid sm:grid-cols-2 gap-6">
+              <div className="grid sm:grid-cols-2 gap-5">
                 <div>
-                  <label className="block text-sm font-semibold text-primary-900 mb-1.5" htmlFor="brand">
+                  <label className={labelClass} htmlFor="brand">
                     Brand <span className="text-red-500 ml-0.5">*</span>
                   </label>
                   <input
                     id="brand" name="brand" type="text" required
                     value={formData.brand} onChange={handleChange}
-                    className="w-full px-4 py-2.5 rounded-lg border border-neutral-300 focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20 outline-none transition-all"
+                    placeholder="e.g. Honda"
+                    className={inputClass}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-primary-900 mb-1.5" htmlFor="model">
+                  <label className={labelClass} htmlFor="model">
                     Model <span className="text-red-500 ml-0.5">*</span>
                   </label>
                   <input
                     id="model" name="model" type="text" required
                     value={formData.model} onChange={handleChange}
-                    className="w-full px-4 py-2.5 rounded-lg border border-neutral-300 focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20 outline-none transition-all"
+                    placeholder="e.g. City"
+                    className={inputClass}
                   />
                 </div>
               </div>
 
-              <div className="grid sm:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-semibold text-primary-900 mb-1.5" htmlFor="color">
-                    Colour <span className="text-red-500 ml-0.5">*</span>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-5">
+                <div className="col-span-2 sm:col-span-1">
+                  <label className={labelClass} htmlFor="color">
+                    Color <span className="text-red-500 ml-0.5">*</span>
                   </label>
                   <input
                     id="color" name="color" type="text" required
                     value={formData.color} onChange={handleChange}
-                    className="w-full px-4 py-2.5 rounded-lg border border-neutral-300 focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20 outline-none transition-all"
+                    placeholder="Silver"
+                    className={inputClass}
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-semibold text-primary-900 mb-1.5" htmlFor="fuelType">
-                    Fuel Type <span className="text-red-500 ml-0.5">*</span>
+                <div className="col-span-2 sm:col-span-1">
+                  <label className={labelClass} htmlFor="seatingCapacity">
+                    Seats <span className="text-red-500 ml-0.5">*</span>
+                  </label>
+                  <input
+                    id="seatingCapacity" name="seatingCapacity" type="number" min="1" max="10" required
+                    value={formData.seatingCapacity} onChange={handleChange}
+                    className={inputClass}
+                  />
+                </div>
+                <div className="col-span-2 sm:col-span-1">
+                  <label className={labelClass} htmlFor="fuelType">
+                    Fuel <span className="text-red-500 ml-0.5">*</span>
                   </label>
                   <select
                     id="fuelType" name="fuelType" required
                     value={formData.fuelType} onChange={handleChange}
-                    className="w-full px-4 py-2.5 rounded-lg border border-neutral-300 focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20 outline-none transition-all bg-white"
+                    className={cn(inputClass, "appearance-none cursor-pointer")}
                   >
                     <option value="PETROL">Petrol</option>
-                    <option value="CNG">CNG</option>
+                    <option value="DIESEL">Diesel</option>
                     <option value="EV">EV</option>
+                    <option value="CNG">CNG</option>
                   </select>
                 </div>
-              </div>
-
-              <div className="grid sm:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-semibold text-primary-900 mb-1.5" htmlFor="seatingCapacity">
-                    Seating Capacity <span className="text-red-500 ml-0.5">*</span>
+                <div className="col-span-2 sm:col-span-1">
+                  <label className={labelClass} htmlFor="registrationYear">
+                    Year <span className="text-red-500 ml-0.5">*</span>
                   </label>
                   <input
-                    id="seatingCapacity" name="seatingCapacity" type="number" min="1" max="15" required
-                    value={formData.seatingCapacity} onChange={handleChange}
-                    className="w-full px-4 py-2.5 rounded-lg border border-neutral-300 focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20 outline-none transition-all"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-primary-900 mb-1.5" htmlFor="registrationYear">
-                    Registration Year <span className="text-red-500 ml-0.5">*</span>
-                  </label>
-                  <select
-                    id="registrationYear" name="registrationYear" required
+                    id="registrationYear" name="registrationYear" type="number" min="1990" max={new Date().getFullYear()} required
                     value={formData.registrationYear} onChange={handleChange}
-                    className="w-full px-4 py-2.5 rounded-lg border border-neutral-300 focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20 outline-none transition-all bg-white"
-                  >
-                    {Array.from({ length: 25 }, (_, i) => new Date().getFullYear() - i).map(year => (
-                      <option key={year} value={year}>{year}</option>
-                    ))}
-                  </select>
+                    className={inputClass}
+                  />
                 </div>
               </div>
 
-              <div className="grid sm:grid-cols-2 gap-6">
+              <div className="grid sm:grid-cols-2 gap-5">
                 <div>
-                  <label className="block text-sm font-semibold text-primary-900 mb-1.5" htmlFor="rcNumber">
+                  <label className={labelClass} htmlFor="rcNumber">
                     RC Number <span className="text-red-500 ml-0.5">*</span>
                   </label>
                   <input
                     id="rcNumber" name="rcNumber" type="text" required
                     value={formData.rcNumber} onChange={handleChange}
-                    className="w-full px-4 py-2.5 rounded-lg border border-neutral-300 focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20 outline-none transition-all uppercase"
+                    className={inputClass}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-primary-900 mb-1.5" htmlFor="insuranceExpiry">
-                    Insurance Expiry Date <span className="text-red-500 ml-0.5">*</span>
+                  <label className={labelClass} htmlFor="insuranceExpiry">
+                    Insurance Expiry <span className="text-red-500 ml-0.5">*</span>
                   </label>
                   <input
                     id="insuranceExpiry" name="insuranceExpiry" type="date" required
                     value={formData.insuranceExpiry} onChange={handleChange}
-                    min={new Date().toISOString().split("T")[0]}
-                    className="w-full px-4 py-2.5 rounded-lg border border-neutral-300 focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20 outline-none transition-all"
+                    className={inputClass}
                   />
                 </div>
               </div>
 
-              <div className="grid sm:grid-cols-2 gap-6 pt-2">
-                <FileUpload
-                  label="Vehicle Photo"
-                  instruction="Front or side view showing vehicle clearly"
-                  accept=".jpg,.jpeg,.png,.webp"
-                  onChange={setVehiclePhoto}
-                  required
-                />
-                
-                <FileUpload
-                  label="RC Photo"
-                  instruction="Clear photo or scan of RC document"
-                  accept=".jpg,.jpeg,.png,.pdf"
-                  onChange={setRcPhoto}
-                  required
-                />
+              <div className="pt-2 border-t border-[#E2E8F0]">
+                <h3 className="text-sm font-bold text-[#10233F] mb-4">Required Documents</h3>
+                <div className="grid sm:grid-cols-2 gap-5">
+                  <FileUpload 
+                    label="Vehicle Photo" 
+                    onChange={(file) => setVehiclePhoto(file)}
+                    accept="image/*"
+                  />
+                  <FileUpload 
+                    label="RC Document" 
+                    onChange={(file) => setRcPhoto(file)}
+                    accept="image/*,.pdf"
+                  />
+                </div>
               </div>
 
-              <div className="flex gap-4 mt-8 pt-6 border-t border-neutral-200">
+              <div className="pt-6 flex flex-col sm:flex-row gap-4 items-center justify-between">
                 <button
                   type="button"
                   onClick={() => setStep(1)}
-                  className="w-1/3 py-3.5 px-4 bg-neutral-100 hover:bg-neutral-200 text-neutral-800 font-semibold rounded-lg transition-all"
+                  className="w-full sm:w-auto px-6 py-3 text-sm font-bold text-[#64748B] hover:text-[#10233F] transition-colors"
                 >
-                  Back
+                  ← Back to Personal Details
                 </button>
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-2/3 py-3.5 px-4 bg-accent-500 hover:bg-accent-400 text-primary-950 font-bold rounded-lg shadow-sm hover:shadow transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+                  className={cn(
+                    "w-full sm:w-2/3 py-3.5 px-4 rounded-xl font-bold text-white transition-all",
+                    "bg-[#2563EB] hover:bg-[#1D4ED8] shadow-md hover:shadow-lg",
+                    "disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-md",
+                    "active:scale-[0.98] focus:ring-2 focus:ring-offset-2 focus:ring-[#2563EB]"
+                  )}
                 >
-                  {loading ? "Registering..." : "Create Driver Account"}
+                  {loading ? "Creating Account..." : "Complete Registration"}
                 </button>
               </div>
             </form>
           )}
 
-          <div className="mt-6 pt-6 border-t border-neutral-200">
-            <p className="text-sm text-neutral-600 font-medium text-center">
-              Looking for a ride instead? <Link href="/register/rider" className="text-accent-600 hover:underline">Register as a Rider</Link>
-            </p>
-            <p className="mt-2 text-sm text-neutral-600 font-medium text-center">
-              Already have an account? <Link href="/signin" className="text-primary-700 hover:underline">Sign In</Link>
+          <div className="mt-8 pt-6 border-t border-[#E2E8F0] text-center">
+            <p className="text-sm font-medium text-[#64748B]">
+              Already have an account?{" "}
+              <Link href="/signin" className="text-[#2563EB] font-bold hover:text-[#1D4ED8] transition-colors">
+                Sign In
+              </Link>
             </p>
           </div>
         </div>

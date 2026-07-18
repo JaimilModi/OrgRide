@@ -1,0 +1,59 @@
+.orgride-light-landing {
+  --landing-bg: #F7F9FC;
+  --landing-surface: #FFFFFF;
+  --landing-surface-soft: #EEF5FF;
+  --landing-surface-sec: #F1F5F9;
+  --landing-text-primary: #10233F;
+  --landing-text-secondary: #475569;
+  --landing-text-muted: #64748B;
+  --landing-blue: #2563EB;
+  --landing-cyan: #0891B2;
+  --landing-green: #16A085;
+  --landing-border: #E2E8F0;
+  --landing-border-strong: #CBD5E1;
+}
+
+/* Base resets restricted to landing */
+.orgride-light-landing {
+  background-color: var(--landing-bg);
+  color: var(--landing-text-primary);
+}
+
+/* NOTE: The blanket `a { color: inherit }` has been removed.
+   Text/navigation links that need specific colors are explicitly
+   styled in their component files using Tailwind color classes. */
+
+/* Footer nav link affordance */
+.orgride-light-landing .landing-footer-link {
+  color: var(--landing-text-muted);
+  cursor: pointer;
+  text-decoration: none;
+  transition: color 0.2s ease;
+  position: relative;
+}
+
+.orgride-light-landing .landing-footer-link:hover {
+  color: var(--landing-text-secondary);
+}
+
+.orgride-light-landing .landing-footer-link:focus-visible {
+  outline: 2px solid var(--landing-blue);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+@keyframes hero-gradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animate-hero-gradient {
+  animation: hero-gradient 6s ease infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-hero-gradient {
+    animation: none;
+  }
+}

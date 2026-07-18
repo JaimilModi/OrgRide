@@ -16,7 +16,11 @@ export interface Ride {
   driverId: string;
   vehicleId: string;
   sourceAddress: string;
+  sourceLatitude: number | string;
+  sourceLongitude: number | string;
   destinationAddress: string;
+  destinationLatitude: number | string;
+  destinationLongitude: number | string;
   pickupAt: string;
   pricePerSeat: number | string;
   availableSeats: number;

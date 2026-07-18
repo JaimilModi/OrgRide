@@ -22,7 +22,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${inter.variable} antialiased`}>
-      <body className="min-h-screen flex flex-col bg-surface text-neutral-900">
+      <body suppressHydrationWarning className="min-h-screen flex flex-col bg-surface text-neutral-900">
         {children}
       </body>
     </html>

@@ -1,50 +1,40 @@
 import Link from "next/link";
-
-const LINKS = [
-  { label: "How It Works", href: "#how-it-works" },
-  { label: "Why OrgRide", href: "#why-orgride" },
-  { label: "Sign In", href: "/signin" },
-];
+import Image from "next/image";
 
 export default function Footer() {
   return (
-    <footer className="bg-primary-950 border-t border-white/[0.04]">
-      <div className="mx-auto max-w-7xl px-6 lg:px-10 py-10 lg:py-14">
-        <div className="flex flex-col gap-8">
-          {/* Brand */}
-          <div className="flex flex-col gap-3">
-            <Link href="/" className="flex items-center gap-2">
-              <svg viewBox="0 0 32 32" className="h-6 w-6 text-neutral-500" fill="none" aria-hidden="true">
-                <circle cx="16" cy="8" r="3" fill="currentColor" className="text-accent-500" />
-                <path d="M6 26 C9 16,13 10,16 10 C19 10,23 16,26 26" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
-                <circle cx="9" cy="23" r="2" fill="currentColor" opacity="0.35" />
-                <circle cx="23" cy="23" r="2" fill="currentColor" opacity="0.35" />
-              </svg>
-              <span className="text-lg font-bold text-neutral-300 tracking-tight">OrgRide</span>
-            </Link>
-            <p className="text-sm text-neutral-500 max-w-xs">
-              Smarter shared commuting for workplace communities.
-            </p>
+    <footer className="border-t border-[var(--landing-border)] bg-[var(--landing-surface-sec)] py-12 relative z-10">
+      <div className="max-w-[1440px] mx-auto px-6">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="flex items-center group">
+            <Image 
+              src="/branding/orgride-logo-transparent.png" 
+              alt="OrgRide Logo" 
+              width={100} 
+              height={100} 
+              className="h-10 w-auto object-contain grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all"
+            />
           </div>
-
-          {/* Links */}
-          <nav className="flex flex-wrap gap-x-8 gap-y-2" aria-label="Footer navigation">
-            {LINKS.map((l) => (
-              <Link
-                key={l.href}
-                href={l.href}
-                className="text-sm text-neutral-500 hover:text-neutral-300 transition-colors"
-              >
-                {l.label}
-              </Link>
-            ))}
-          </nav>
-
-          {/* Copyright */}
-          <div className="pt-6 border-t border-white/[0.04]">
-            <p className="text-xs text-neutral-600">
-              &copy; {new Date().getFullYear()} OrgRide. All rights reserved.
-            </p>
+          
+          <div className="flex items-center gap-6">
+            <Link href="/signin" className="text-sm font-medium text-[var(--landing-text-secondary)] hover:text-[var(--landing-blue)] transition-colors">
+              Sign In
+            </Link>
+            <Link href="/register/rider" className="text-sm font-medium text-[var(--landing-text-secondary)] hover:text-[var(--landing-blue)] transition-colors">
+              Find a Ride
+            </Link>
+            <Link href="/register/driver" className="text-sm font-medium text-[var(--landing-text-secondary)] hover:text-[var(--landing-blue)] transition-colors">
+              Offer a Ride
+            </Link>
+          </div>
+        </div>
+        
+        <div className="mt-12 pt-8 border-t border-[var(--landing-border-strong)] flex flex-col md:flex-row items-center justify-between gap-4 text-xs font-medium text-[var(--landing-text-muted)]">
+          <p>© {new Date().getFullYear()} OrgRide. Premium Enterprise Mobility.</p>
+          <div className="flex gap-6">
+            <a href="#" className="landing-footer-link text-xs font-medium">Privacy</a>
+            <a href="#" className="landing-footer-link text-xs font-medium">Terms</a>
+            <a href="#" className="landing-footer-link text-xs font-medium">Security</a>
           </div>
         </div>
       </div>

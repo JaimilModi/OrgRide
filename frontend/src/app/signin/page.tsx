@@ -4,6 +4,9 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { login } from "@/lib/api";
+import { Eye, EyeOff } from "lucide-react";
+import Image from "next/image";
+import { cn } from "@/lib/utils";
 
 export default function SignInPage() {
   const router = useRouter();
@@ -38,66 +41,85 @@ export default function SignInPage() {
   };
 
   return (
-    <div className="min-h-[100dvh] lg:h-[100dvh] flex bg-white lg:overflow-hidden">
-      {/* Left Panel - Branding */}
-      <div className="hidden lg:flex lg:w-[45%] bg-primary-950 flex-col justify-between p-10 relative overflow-hidden">
-        {/* Subtle background element */}
-        <div className="absolute inset-0 pointer-events-none opacity-20" aria-hidden="true">
-          <svg className="w-full h-full" viewBox="0 0 800 800" fill="none">
-            <path d="M-100 600 C200 400, 400 700, 900 300" stroke="#4eeab5" strokeWidth="4" />
-            <path d="M-100 650 C200 450, 400 750, 900 350" stroke="#36a08d" strokeWidth="2" />
-          </svg>
-        </div>
+    <div className="min-h-[100dvh] lg:h-[100dvh] flex bg-[#F7F9FC] lg:overflow-hidden font-sans">
+      {/* Left Panel — Premium Illustration */}
+      <div className="hidden lg:flex lg:w-[45%] bg-[#EEF5FF] flex-col justify-between p-10 relative overflow-hidden border-r border-[#E2E8F0]">
+        {/* Subtle background circles */}
+        <div className="absolute top-[-5%] right-[-5%] w-96 h-96 bg-[#2563EB]/8 rounded-full blur-[100px] pointer-events-none" />
+        <div className="absolute bottom-[5%] left-[-5%] w-80 h-80 bg-[#0891B2]/8 rounded-full blur-[80px] pointer-events-none" />
 
+        {/* Logo */}
         <div className="relative z-10">
-          <Link href="/" className="flex items-center gap-2">
-            <svg viewBox="0 0 32 32" className="h-8 w-8 text-white" fill="none">
-              <circle cx="16" cy="8" r="3" fill="currentColor" className="text-accent-500" />
-              <path d="M6 26 C9 16,13 10,16 10 C19 10,23 16,26 26" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
-            </svg>
-            <span className="text-2xl font-bold text-white tracking-tight">OrgRide</span>
+          <Link href="/" className="flex items-center hover:opacity-80 transition-opacity">
+            <Image
+              src="/branding/orgride-logo-transparent.png"
+              alt="OrgRide"
+              width={140}
+              height={56}
+              className="h-10 w-auto object-contain"
+              priority
+            />
           </Link>
         </div>
-        
-        <div className="relative z-10 max-w-md">
-          <h1 className="text-4xl font-bold text-white mb-3 leading-tight">
-            Share the route.<br />
-            Simplify the commute.
-          </h1>
-          <p className="text-lg text-primary-200">
-            Join your trusted workplace network to find rides or offer available seats to colleagues.
-          </p>
+
+        {/* Illustration */}
+        <div className="relative z-10 flex flex-col items-center justify-center flex-1 py-8">
+          <div className="w-full max-w-sm mx-auto">
+            <Image
+              src="/images/auth-illustration.png"
+              alt="OrgRide carpooling illustration"
+              width={460}
+              height={460}
+              className="w-full h-auto drop-shadow-lg"
+              priority
+            />
+          </div>
+          <div className="mt-8 text-center max-w-xs">
+            <h1 className="text-2xl font-extrabold text-[#10233F] mb-3 leading-snug tracking-tight">
+              Share the route.<br />
+              <span className="text-[#2563EB]">Simplify the commute.</span>
+            </h1>
+            <p className="text-[#475569] font-medium leading-relaxed text-sm">
+              Join your trusted workplace network to find rides or offer available seats to colleagues.
+            </p>
+          </div>
         </div>
-        
-        <div className="relative z-10 text-primary-400 text-xs">
-          &copy; {new Date().getFullYear()} OrgRide. All rights reserved.
+
+        {/* Bottom tag */}
+        <div className="relative z-10 flex items-center gap-2 text-xs font-semibold text-[#64748B] uppercase tracking-widest">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#16A085]" />
+          AI Mobility Network
         </div>
       </div>
 
-      {/* Right Panel - Form */}
-      <div className="w-full lg:w-[55%] flex items-center justify-center p-6 lg:p-8 lg:overflow-y-auto">
-        <div className="w-full max-w-md">
+      {/* Right Panel — Form */}
+      <div className="w-full lg:w-[55%] flex items-center justify-center p-6 lg:p-8 lg:overflow-y-auto bg-[#F7F9FC]">
+        <div className="w-full max-w-md bg-white p-8 md:p-10 rounded-3xl border border-[#E2E8F0] shadow-xl shadow-slate-100/50">
+          {/* Mobile logo */}
           <div className="lg:hidden mb-8 flex justify-center">
-            <Link href="/" className="flex items-center gap-2">
-              <svg viewBox="0 0 32 32" className="h-8 w-8 text-primary-950" fill="none">
-                <circle cx="16" cy="8" r="3" fill="currentColor" className="text-accent-500" />
-                <path d="M6 26 C9 16,13 10,16 10 C19 10,23 16,26 26" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
-              </svg>
-              <span className="text-2xl font-bold text-primary-950 tracking-tight">OrgRide</span>
+            <Link href="/">
+              <Image
+                src="/branding/orgride-logo-transparent.png"
+                alt="OrgRide"
+                width={140}
+                height={56}
+                className="h-9 w-auto object-contain"
+              />
             </Link>
           </div>
 
-          <h2 className="text-3xl font-extrabold text-primary-950 mb-6">Welcome back</h2>
+          <h2 className="text-3xl font-extrabold text-[#10233F] mb-2">Welcome back</h2>
+          <p className="text-[#64748B] font-medium mb-8">Sign in to your OrgRide account</p>
 
           {error && (
-            <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">
-              {error}
+            <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm font-medium flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" /> {error}
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block text-sm font-semibold text-primary-900 mb-1" htmlFor="loginId">
+              <label className="block text-sm font-semibold text-[#475569] mb-1.5" htmlFor="loginId">
                 Work Email or Employee ID <span className="text-red-500 ml-0.5">*</span>
               </label>
               <input
@@ -105,13 +127,14 @@ export default function SignInPage() {
                 type="text"
                 value={loginIdState}
                 onChange={(e) => setLoginIdState(e.target.value)}
-                className="w-full px-4 py-2.5 rounded-lg border border-neutral-300 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 outline-none transition-all"
+                className="w-full px-4 py-3 rounded-xl bg-white border border-[#CBD5E1] text-[#10233F] focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/20 outline-none transition-all placeholder:text-[#94A3B8] font-medium shadow-sm"
+                placeholder="e.g., EMP12345"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-primary-900 mb-1" htmlFor="password">
+              <label className="block text-sm font-semibold text-[#475569] mb-1.5" htmlFor="password">
                 Password <span className="text-red-500 ml-0.5">*</span>
               </label>
               <div className="relative">
@@ -120,25 +143,25 @@ export default function SignInPage() {
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-lg border border-neutral-300 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 outline-none transition-all pr-12"
+                  className="w-full px-4 py-3 rounded-xl bg-white border border-[#CBD5E1] text-[#10233F] focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/20 outline-none transition-all pr-12 font-medium shadow-sm"
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-neutral-500 hover:text-primary-700 font-medium"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-[#94A3B8] hover:text-[#475569] transition-colors"
                 >
-                  {showPassword ? "Hide" : "Show"}
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
             </div>
 
             <div className="flex items-center justify-between pt-1">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" className="w-4 h-4 rounded border-neutral-300 text-primary-600 focus:ring-primary-500" />
-                <span className="text-sm text-neutral-600 font-medium">Remember me</span>
+              <label className="flex items-center gap-2 cursor-pointer group">
+                <input type="checkbox" className="w-4 h-4 rounded border-[#CBD5E1] text-[#2563EB] focus:ring-[#2563EB]/50" />
+                <span className="text-sm text-[#64748B] font-medium group-hover:text-[#475569] transition-colors">Remember me</span>
               </label>
-              <a href="#" className="text-sm font-semibold text-primary-600 hover:text-primary-800">
+              <a href="#" className="text-sm font-semibold text-[#2563EB] hover:text-[#1D4ED8] transition-colors">
                 Forgot Password?
               </a>
             </div>
@@ -146,28 +169,33 @@ export default function SignInPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full mt-3 py-3 px-4 bg-primary-900 hover:bg-primary-800 text-white font-semibold rounded-lg shadow-sm hover:shadow transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+              className={cn(
+                "w-full mt-4 py-3.5 px-4 rounded-xl font-bold text-white transition-all",
+                "bg-[#2563EB] hover:bg-[#1D4ED8] shadow-md hover:shadow-lg",
+                "disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-md",
+                "active:scale-[0.98] focus:ring-2 focus:ring-offset-2 focus:ring-[#2563EB]"
+              )}
             >
               {loading ? "Signing in..." : "Sign In"}
             </button>
           </form>
 
-          <div className="mt-8 pt-6 border-t border-neutral-200">
-            <p className="text-center text-sm text-neutral-500 font-medium mb-3">
-              New to OrgRide? Choose how you want to join:
+          <div className="mt-8 pt-8 border-t border-[#E2E8F0]">
+            <p className="text-center text-xs font-bold text-[#64748B] uppercase tracking-wider mb-4">
+              New to OrgRide?
             </p>
             <div className="grid grid-cols-2 gap-3">
               <Link
                 href="/register/rider"
-                className="flex items-center justify-center py-2.5 px-4 text-sm font-semibold text-primary-700 bg-primary-50 hover:bg-primary-100 rounded-lg transition-colors border border-primary-200"
+                className="flex items-center justify-center py-3 px-4 text-sm font-bold text-[#2563EB] bg-[#EEF5FF] hover:bg-[#DBEAFE] border border-[#BFDBFE] rounded-xl transition-all active:scale-[0.98]"
               >
-                Register as Rider
+                Find a Ride
               </Link>
               <Link
                 href="/register/driver"
-                className="flex items-center justify-center py-2.5 px-4 text-sm font-semibold text-accent-800 bg-accent-50 hover:bg-accent-100 rounded-lg transition-colors border border-accent-200"
+                className="flex items-center justify-center py-3 px-4 text-sm font-bold text-white bg-[#2563EB] hover:bg-[#1D4ED8] rounded-xl transition-all shadow-md active:scale-[0.98]"
               >
-                Register as Driver
+                Offer a Ride
               </Link>
             </div>
           </div>
@@ -176,3 +204,6 @@ export default function SignInPage() {
     </div>
   );
 }
+
+
+
