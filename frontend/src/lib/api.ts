@@ -177,3 +177,26 @@ export async function reportUser(data: { rideId: string; reportedUserId: string;
     body: JSON.stringify(data),
   });
 }
+
+// Admin Endpoints
+export async function getAdminReports() {
+  return await fetchWithAuth(`/reports`);
+}
+
+export async function updateReportStatus(id: string, status: string) {
+  return await fetchWithAuth(`/reports/${id}/status`, {
+    method: "PATCH",
+    body: JSON.stringify({ status }),
+  });
+}
+
+export async function getOrganization() {
+  return await fetchWithAuth(`/organization`);
+}
+
+export async function updateOrganization(data: any) {
+  return await fetchWithAuth(`/organization`, {
+    method: "PUT",
+    body: JSON.stringify(data),
+  });
+}
