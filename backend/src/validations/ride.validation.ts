@@ -87,3 +87,12 @@ export const SearchRidesSchema = z.object({
   })
 });
 
+export const RideIdParamSchema = z.object({
+  params: z.object({
+    id: z.string({
+      required_error: 'Ride ID is required'
+    }).uuid('Ride ID must be a valid UUID')
+  })
+});
+
+

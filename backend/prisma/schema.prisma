@@ -100,6 +100,9 @@ model Employee {
   vehicles           Vehicle[]
   rides              Ride[]
   bookings           RideParticipant[]
+  wallet             Wallet?
+  reportsCreated     Report[]      @relation("ReporterRelation")
+  reportsReceived    Report[]      @relation("ReportedUserRelation")
 
   @@map("employees")
 }
@@ -154,6 +157,7 @@ model Ride {
   driver             Employee          @relation(fields: [driverId], references: [id], onDelete: Cascade)
   vehicle            Vehicle           @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
   participants       RideParticipant[]
+  reports            Report[]
 
   @@map("rides")
 }
@@ -177,5 +181,69 @@ model RideParticipant {
   passenger    Employee      @relation(fields: [passengerId], references: [id], onDelete: Cascade)
 
   @@map("ride_participants")
+}
+
+enum TransactionType {
+  RECHARGE
+  PAYMENT
+  REFUND
+  CREDIT
+}
+
+model Wallet {
+  id         String              @id @default(uuid())
+  employeeId String              @unique
+  balance    Decimal             @default(0.0)
+  createdAt  DateTime            @default(now())
+  updatedAt  DateTime            @updatedAt
+  employee   Employee            @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  transactions WalletTransaction[]
+
+  @@map("wallets")
+}
+
+model WalletTransaction {
+  id          String          @id @default(uuid())
+  walletId    String
+  amount      Decimal
+  type        TransactionType
+  description String?
+  createdAt   DateTime        @default(now())
+  wallet      Wallet          @relation(fields: [walletId], references: [id], onDelete: Cascade)
+
+  @@map("wallet_transactions")
+}
+
+enum ReportCategory {
+  DRIVER_LATE
+  PASSENGER_LATE
+  VEHICLE
+  PAYMENT
+  SAFETY
+  OTHER
+}
+
+enum ReportStatus {
+  PENDING
+  REVIEWING
+  RESOLVED
+}
+
+model Report {
+  id             String         @id @default(uuid())
+  rideId         String
+  reporterId     String
+  reportedUserId String
+  category       ReportCategory
+  description    String
+  status         ReportStatus   @default(PENDING)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  ride           Ride           @relation(fields: [rideId], references: [id], onDelete: Cascade)
+  reporter       Employee       @relation("ReporterRelation", fields: [reporterId], references: [id], onDelete: Cascade)
+  reportedUser   Employee       @relation("ReportedUserRelation", fields: [reportedUserId], references: [id], onDelete: Cascade)
+
+  @@map("reports")
 }
 

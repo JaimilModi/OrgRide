@@ -410,5 +410,117 @@ export class RideService {
 
     return ride;
   }
+
+  /**
+   * Start a ride
+   */
+  static async startRide(id: string, driverId: string) {
+    const ride = await prisma.ride.findUnique({
+      where: { id },
+    });
+
+    if (!ride) {
+      throw new NotFoundError('Ride not found');
+    }
+
+    if (ride.driverId !== driverId) {
+      throw new ForbiddenError('You are not authorized to start this ride');
+    }
+
+    if (ride.status !== 'SCHEDULED') {
+      throw new BadRequestError(`Cannot start a ride with status ${ride.status}`);
+    }
+
+    return prisma.ride.update({
+      where: { id },
+      data: {
+        status: 'STARTED',
+      },
+    });
+  }
+
+  /**
+   * Complete a ride and credit driver's wallet with passenger payments
+   */
+  static async completeRide(id: string, driverId: string) {
+    return prisma.$transaction(async (tx) => {
+      // 1. Fetch ride details
+      const ride = await tx.ride.findUnique({
+        where: { id },
+        include: {
+          participants: true,
+        },
+      });
+
+      if (!ride) {
+        throw new NotFoundError('Ride not found');
+      }
+
+      if (ride.driverId !== driverId) {
+        throw new ForbiddenError('You are not authorized to complete this ride');
+      }
+
+      if (ride.status !== 'STARTED') {
+        throw new BadRequestError(`Cannot complete a ride with status ${ride.status}`);
+      }
+
+      // Update ride status to COMPLETED
+      const updatedRide = await tx.ride.update({
+        where: { id },
+        data: {
+          status: 'COMPLETED',
+        },
+      });
+
+      // Calculate total earnings from paid accepted bookings
+      let totalCredited = 0;
+      for (const participant of ride.participants) {
+        if (participant.status === 'ACCEPTED') {
+          // Check if booking was paid
+          const paymentTx = await tx.walletTransaction.findFirst({
+            where: {
+              description: {
+                contains: `Booking Payment: ${participant.id}`,
+              },
+            },
+          });
+
+          if (paymentTx) {
+            const fare = Number(participant.seatsBooked) * Number(ride.pricePerSeat);
+            totalCredited += fare;
+
+            // Get or create driver's wallet
+            const driverWallet = await tx.wallet.upsert({
+              where: { employeeId: driverId },
+              update: {
+                balance: {
+                  increment: fare,
+                },
+              },
+              create: {
+                employeeId: driverId,
+                balance: fare,
+              },
+            });
+
+            // Log driver credit transaction
+            await tx.walletTransaction.create({
+              data: {
+                walletId: driverWallet.id,
+                amount: fare,
+                type: 'CREDIT',
+                description: `Ride Earning: Booking ${participant.id} on Ride ${ride.rideCode}`,
+              },
+            });
+          }
+        }
+      }
+
+      return {
+        ride: updatedRide,
+        creditedAmount: totalCredited,
+      };
+    });
+  }
 }
 

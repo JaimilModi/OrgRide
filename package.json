@@ -1,8 +1,0 @@
-{
-  "name": "orgride",
-  "private": true,
-  "workspaces": [
-    "backend",
-    "frontend"
-  ]
-}
