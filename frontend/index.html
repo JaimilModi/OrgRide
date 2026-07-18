@@ -736,17 +736,199 @@
         <!-- ========================================== -->
         <!-- TAB: ADMIN CONTROL (Verify reports) -->
         <!-- ========================================== -->
-        <div id="tab-admin" class="tab-content space-y-6 hidden">
-          <div class="bg-indigo-50 border border-indigo-200 rounded-2xl p-5 shadow-sm">
-            <h3 class="font-extrabold text-indigo-950 text-base">System Administrative Panel</h3>
-            <p class="text-sm text-indigo-800 mt-1">Review global corporate violations, verify vehicle documents, and process unresolved tickets.</p>
+        <!-- ========================================== -->
+        <!-- TAB: ADMIN CONTROL (Enterprise Dashboard) -->
+        <!-- ========================================== -->
+        <div id="tab-admin" class="tab-content hidden flex flex-col h-full">
+          <!-- Admin Sub-Navigation -->
+          <div class="bg-white border-b border-slate-200 px-6 py-3 flex space-x-6 overflow-x-auto shrink-0 shadow-sm sticky top-0 z-20">
+            <button onclick="switchAdminTab('dashboard')" id="nav-admin-dashboard" class="admin-nav-item text-indigo-600 font-bold border-b-2 border-indigo-600 pb-1 whitespace-nowrap transition-all">Analytics</button>
+            <button onclick="switchAdminTab('vehicles')" id="nav-admin-vehicles" class="admin-nav-item text-slate-500 hover:text-slate-700 font-semibold pb-1 whitespace-nowrap transition-all">Vehicles</button>
+            <button onclick="switchAdminTab('employees')" id="nav-admin-employees" class="admin-nav-item text-slate-500 hover:text-slate-700 font-semibold pb-1 whitespace-nowrap transition-all">Employees</button>
+            <button onclick="switchAdminTab('rides')" id="nav-admin-rides" class="admin-nav-item text-slate-500 hover:text-slate-700 font-semibold pb-1 whitespace-nowrap transition-all">Rides</button>
+            <button onclick="switchAdminTab('bookings')" id="nav-admin-bookings" class="admin-nav-item text-slate-500 hover:text-slate-700 font-semibold pb-1 whitespace-nowrap transition-all">Bookings</button>
+            <button onclick="switchAdminTab('reports')" id="nav-admin-reports" class="admin-nav-item text-slate-500 hover:text-slate-700 font-semibold pb-1 whitespace-nowrap transition-all">Reports</button>
           </div>
 
-          <div class="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm">
-            <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2"><i data-lucide="shield-alert" class="h-5 w-5 text-rose-500"></i> Active System Incidents</h3>
-            <div id="demoAdminReportsList" class="space-y-4">
-              <!-- Admin reports listed -->
+          <div class="flex-1 overflow-y-auto p-6 space-y-6">
+            
+            <!-- ADMIN SUB: DASHBOARD -->
+            <div id="admin-sub-dashboard" class="admin-sub-tab space-y-6">
+              <div class="flex justify-between items-center">
+                <h2 class="text-2xl font-black text-slate-800 tracking-tight">Platform Analytics</h2>
+                <button onclick="fetchAdminStats()" class="bg-indigo-50 text-indigo-600 hover:bg-indigo-100 font-bold text-xs px-3 py-1.5 rounded-lg flex items-center gap-1 transition-all"><i data-lucide="refresh-cw" class="h-3 w-3"></i> Refresh</button>
+              </div>
+
+              <!-- Stat Cards Grid -->
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-2xl p-5 text-white shadow-lg relative overflow-hidden">
+                  <i data-lucide="users" class="absolute -right-4 -bottom-4 h-24 w-24 opacity-10"></i>
+                  <p class="text-indigo-100 text-xs font-bold uppercase tracking-wider mb-1">Total Employees</p>
+                  <h3 class="text-3xl font-black" id="stat-totalEmployees">-</h3>
+                  <div class="mt-2 text-[10px] bg-white/20 inline-block px-2 py-0.5 rounded backdrop-blur-sm"><span id="stat-activeEmployees">-</span> Active</div>
+                </div>
+
+                <div class="bg-gradient-to-br from-emerald-500 to-emerald-700 rounded-2xl p-5 text-white shadow-lg relative overflow-hidden">
+                  <i data-lucide="car" class="absolute -right-4 -bottom-4 h-24 w-24 opacity-10"></i>
+                  <p class="text-emerald-100 text-xs font-bold uppercase tracking-wider mb-1">Verified Vehicles</p>
+                  <h3 class="text-3xl font-black" id="stat-verifiedVehicles">-</h3>
+                  <div class="mt-2 text-[10px] bg-white/20 inline-block px-2 py-0.5 rounded backdrop-blur-sm"><span id="stat-pendingVehicles">-</span> Pending</div>
+                </div>
+
+                <div class="bg-gradient-to-br from-violet-500 to-violet-700 rounded-2xl p-5 text-white shadow-lg relative overflow-hidden">
+                  <i data-lucide="map" class="absolute -right-4 -bottom-4 h-24 w-24 opacity-10"></i>
+                  <p class="text-violet-100 text-xs font-bold uppercase tracking-wider mb-1">Total Rides</p>
+                  <h3 class="text-3xl font-black" id="stat-completedRides">-</h3>
+                  <div class="mt-2 text-[10px] bg-white/20 inline-block px-2 py-0.5 rounded backdrop-blur-sm"><span id="stat-activeRides">-</span> Active Now</div>
+                </div>
+
+                <div class="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-5 text-white shadow-lg relative overflow-hidden">
+                  <i data-lucide="wallet" class="absolute -right-4 -bottom-4 h-24 w-24 opacity-10"></i>
+                  <p class="text-slate-300 text-xs font-bold uppercase tracking-wider mb-1">Total Wallets Balance</p>
+                  <h3 class="text-3xl font-black flex items-baseline"><span class="text-xl mr-1">₹</span><span id="stat-totalWalletBalance">-</span></h3>
+                  <div class="mt-2 text-[10px] bg-white/20 inline-block px-2 py-0.5 rounded backdrop-blur-sm"><span id="stat-totalBookings">-</span> Total Bookings</div>
+                </div>
+              </div>
+
+              <!-- Reports Quick View -->
+              <div class="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm">
+                 <h3 class="font-bold text-slate-800 mb-4 flex items-center justify-between">
+                   <div class="flex items-center gap-2">
+                     <i data-lucide="shield-alert" class="h-5 w-5 text-amber-500"></i> Incident Reports Summary
+                   </div>
+                   <button onclick="switchAdminTab('reports')" class="text-indigo-600 font-semibold text-xs hover:underline">View All</button>
+                 </h3>
+                 <div class="grid grid-cols-2 gap-4">
+                   <div class="bg-amber-50 border border-amber-100 p-4 rounded-xl flex items-center justify-between">
+                     <span class="text-amber-800 font-semibold">Open / Reviewing</span>
+                     <span class="text-2xl font-black text-amber-600" id="stat-openReports">-</span>
+                   </div>
+                   <div class="bg-emerald-50 border border-emerald-100 p-4 rounded-xl flex items-center justify-between">
+                     <span class="text-emerald-800 font-semibold">Resolved</span>
+                     <span class="text-2xl font-black text-emerald-600" id="stat-resolvedReports">-</span>
+                   </div>
+                 </div>
+              </div>
             </div>
+
+            <!-- ADMIN SUB: VEHICLES -->
+            <div id="admin-sub-vehicles" class="admin-sub-tab hidden space-y-4">
+              <div class="flex justify-between items-center mb-2">
+                <h2 class="text-xl font-bold text-slate-800">Vehicle Approvals</h2>
+                <button onclick="fetchAdminVehicles()" class="bg-indigo-50 text-indigo-600 hover:bg-indigo-100 font-bold text-xs px-3 py-1.5 rounded-lg flex items-center gap-1 transition-all"><i data-lucide="refresh-cw" class="h-3 w-3"></i> Refresh</button>
+              </div>
+              <div class="bg-white border border-slate-100 rounded-2xl shadow-sm overflow-hidden">
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left border-collapse">
+                    <thead>
+                      <tr class="bg-slate-50 text-slate-500 text-[10px] uppercase tracking-wider">
+                        <th class="p-4 font-bold border-b border-slate-100">Vehicle</th>
+                        <th class="p-4 font-bold border-b border-slate-100">Owner</th>
+                        <th class="p-4 font-bold border-b border-slate-100">Details</th>
+                        <th class="p-4 font-bold border-b border-slate-100">Documents</th>
+                        <th class="p-4 font-bold border-b border-slate-100">Status</th>
+                        <th class="p-4 font-bold border-b border-slate-100 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody id="adminVehiclesList" class="divide-y divide-slate-100">
+                      <tr><td colspan="6" class="p-8 text-center text-slate-400 text-sm">Loading vehicles...</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <!-- ADMIN SUB: EMPLOYEES -->
+            <div id="admin-sub-employees" class="admin-sub-tab hidden space-y-4">
+              <div class="flex justify-between items-center mb-2">
+                <h2 class="text-xl font-bold text-slate-800">Employee Management</h2>
+                <button onclick="fetchAdminEmployees()" class="bg-indigo-50 text-indigo-600 hover:bg-indigo-100 font-bold text-xs px-3 py-1.5 rounded-lg flex items-center gap-1 transition-all"><i data-lucide="refresh-cw" class="h-3 w-3"></i> Refresh</button>
+              </div>
+              <div class="bg-white border border-slate-100 rounded-2xl shadow-sm overflow-hidden">
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left border-collapse">
+                    <thead>
+                      <tr class="bg-slate-50 text-slate-500 text-[10px] uppercase tracking-wider">
+                        <th class="p-4 font-bold border-b border-slate-100">Employee</th>
+                        <th class="p-4 font-bold border-b border-slate-100">Dept & Role</th>
+                        <th class="p-4 font-bold border-b border-slate-100">Activity (V/R/B)</th>
+                        <th class="p-4 font-bold border-b border-slate-100">Status</th>
+                        <th class="p-4 font-bold border-b border-slate-100 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody id="adminEmployeesList" class="divide-y divide-slate-100">
+                      <tr><td colspan="5" class="p-8 text-center text-slate-400 text-sm">Loading employees...</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <!-- ADMIN SUB: RIDES -->
+            <div id="admin-sub-rides" class="admin-sub-tab hidden space-y-4">
+              <div class="flex justify-between items-center mb-2">
+                <h2 class="text-xl font-bold text-slate-800">Platform Rides</h2>
+                <button onclick="fetchAdminRides()" class="bg-indigo-50 text-indigo-600 hover:bg-indigo-100 font-bold text-xs px-3 py-1.5 rounded-lg flex items-center gap-1 transition-all"><i data-lucide="refresh-cw" class="h-3 w-3"></i> Refresh</button>
+              </div>
+              <div class="bg-white border border-slate-100 rounded-2xl shadow-sm overflow-hidden">
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left border-collapse">
+                    <thead>
+                      <tr class="bg-slate-50 text-slate-500 text-[10px] uppercase tracking-wider">
+                        <th class="p-4 font-bold border-b border-slate-100">Ride Code</th>
+                        <th class="p-4 font-bold border-b border-slate-100">Driver & Vehicle</th>
+                        <th class="p-4 font-bold border-b border-slate-100">Route</th>
+                        <th class="p-4 font-bold border-b border-slate-100">Seats & Fare</th>
+                        <th class="p-4 font-bold border-b border-slate-100">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody id="adminRidesList" class="divide-y divide-slate-100">
+                      <tr><td colspan="5" class="p-8 text-center text-slate-400 text-sm">Loading rides...</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <!-- ADMIN SUB: BOOKINGS -->
+            <div id="admin-sub-bookings" class="admin-sub-tab hidden space-y-4">
+              <div class="flex justify-between items-center mb-2">
+                <h2 class="text-xl font-bold text-slate-800">Platform Bookings</h2>
+                <button onclick="fetchAdminBookings()" class="bg-indigo-50 text-indigo-600 hover:bg-indigo-100 font-bold text-xs px-3 py-1.5 rounded-lg flex items-center gap-1 transition-all"><i data-lucide="refresh-cw" class="h-3 w-3"></i> Refresh</button>
+              </div>
+              <div class="bg-white border border-slate-100 rounded-2xl shadow-sm overflow-hidden">
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left border-collapse">
+                    <thead>
+                      <tr class="bg-slate-50 text-slate-500 text-[10px] uppercase tracking-wider">
+                        <th class="p-4 font-bold border-b border-slate-100">Date</th>
+                        <th class="p-4 font-bold border-b border-slate-100">Passenger</th>
+                        <th class="p-4 font-bold border-b border-slate-100">Ride & Driver</th>
+                        <th class="p-4 font-bold border-b border-slate-100">Seats</th>
+                        <th class="p-4 font-bold border-b border-slate-100">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody id="adminBookingsList" class="divide-y divide-slate-100">
+                      <tr><td colspan="5" class="p-8 text-center text-slate-400 text-sm">Loading bookings...</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <!-- ADMIN SUB: REPORTS -->
+            <div id="admin-sub-reports" class="admin-sub-tab hidden space-y-4">
+              <div class="flex justify-between items-center mb-2">
+                <h2 class="text-xl font-bold text-slate-800">Incident Reports</h2>
+                <button onclick="fetchAdminReports()" class="bg-indigo-50 text-indigo-600 hover:bg-indigo-100 font-bold text-xs px-3 py-1.5 rounded-lg flex items-center gap-1 transition-all"><i data-lucide="refresh-cw" class="h-3 w-3"></i> Refresh</button>
+              </div>
+              <div class="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm">
+                <div id="demoAdminReportsList" class="space-y-4">
+                  <!-- Admin reports listed -->
+                </div>
+              </div>
+            </div>
+
           </div>
         </div>
 
@@ -1026,7 +1208,10 @@
       if (tabId === 'offer-ride') populateOfferVehicles();
       if (tabId === 'bookings') refreshActiveDemoState();
       if (tabId === 'reports') fetchDemoReports();
-      if (tabId === 'admin') fetchAdminReports();
+      if (tabId === 'admin') {
+        fetchAdminStats();
+        switchAdminTab('dashboard');
+      }
       if (tabId === 'wallet') {
         fetchWallet();
         fetchWalletTransactions();
@@ -2153,8 +2338,283 @@
     }
 
     // ==========================================
-    // 🔑 ADMIN ONLY METHODS
+    // 🛡️ ADMIN ONLY METHODS
     // ==========================================
+    function switchAdminTab(tabId) {
+      document.querySelectorAll('.admin-sub-tab').forEach(el => el.classList.add('hidden'));
+      document.getElementById('admin-sub-' + tabId).classList.remove('hidden');
+      
+      document.querySelectorAll('.admin-nav-item').forEach(el => {
+        el.classList.remove('text-indigo-600', 'border-b-2', 'border-indigo-600');
+        el.classList.add('text-slate-500');
+      });
+      const activeNav = document.getElementById('nav-admin-' + tabId);
+      activeNav.classList.remove('text-slate-500');
+      activeNav.classList.add('text-indigo-600', 'border-b-2', 'border-indigo-600');
+
+      if (tabId === 'dashboard') fetchAdminStats();
+      if (tabId === 'vehicles') fetchAdminVehicles();
+      if (tabId === 'employees') fetchAdminEmployees();
+      if (tabId === 'rides') fetchAdminRides();
+      if (tabId === 'bookings') fetchAdminBookings();
+      if (tabId === 'reports') fetchAdminReports();
+    }
+
+    async function fetchAdminStats() {
+      try {
+        const res = await fetch(`${API_BASE}/admin/stats`, { headers: getHeaders() });
+        const json = await res.json();
+        if (json.success && json.data) {
+          document.getElementById('stat-totalEmployees').innerText = json.data.totalEmployees;
+          document.getElementById('stat-activeEmployees').innerText = json.data.activeEmployees;
+          document.getElementById('stat-verifiedVehicles').innerText = json.data.verifiedVehicles;
+          document.getElementById('stat-pendingVehicles').innerText = json.data.pendingVehicles;
+          document.getElementById('stat-completedRides').innerText = json.data.completedRides;
+          document.getElementById('stat-activeRides').innerText = json.data.activeRides;
+          document.getElementById('stat-totalWalletBalance').innerText = parseFloat(json.data.totalWalletBalance).toFixed(2);
+          document.getElementById('stat-totalBookings').innerText = json.data.totalBookings;
+          document.getElementById('stat-openReports').innerText = json.data.openReports;
+          document.getElementById('stat-resolvedReports').innerText = json.data.resolvedReports;
+        }
+      } catch (err) {
+        console.error('Failed to fetch admin stats:', err);
+      }
+    }
+
+    async function fetchAdminVehicles() {
+      const container = document.getElementById('adminVehiclesList');
+      container.innerHTML = '<tr><td colspan="6" class="p-8 text-center text-slate-400 text-sm">Loading vehicles...</td></tr>';
+      try {
+        const res = await fetch(`${API_BASE}/admin/vehicles`, { headers: getHeaders() });
+        const json = await res.json();
+        if (json.success && json.data) {
+          if (json.data.length === 0) {
+             container.innerHTML = '<tr><td colspan="6" class="p-8 text-center text-slate-400 text-sm">No vehicles found.</td></tr>';
+             return;
+          }
+          container.innerHTML = json.data.map(v => {
+            let statusBadge = v.verificationStatus === 'VERIFIED' ? 'bg-emerald-100 text-emerald-700' :
+                              v.verificationStatus === 'REJECTED' ? 'bg-rose-100 text-rose-700' :
+                              'bg-amber-100 text-amber-700';
+            
+            return `
+              <tr class="hover:bg-slate-50 transition-colors">
+                <td class="p-4 border-b border-slate-100">
+                  <div class="flex items-center gap-3">
+                    <img src="${v.vehicleImage}" alt="Vehicle" class="h-10 w-10 rounded-lg object-cover bg-slate-200">
+                    <div>
+                      <p class="font-bold text-slate-800 text-sm">${v.vehicleNumber}</p>
+                      <p class="text-xs text-slate-500">${v.brand} ${v.model}</p>
+                    </div>
+                  </div>
+                </td>
+                <td class="p-4 border-b border-slate-100">
+                  <p class="font-bold text-slate-800 text-sm">${v.employee.name}</p>
+                  <p class="text-xs text-slate-500">${v.employee.employeeId}</p>
+                </td>
+                <td class="p-4 border-b border-slate-100 text-xs text-slate-600">
+                  ${v.type} | ${v.fuelType}<br>
+                  ${v.seatingCapacity} Seats | Year: ${v.registrationYear}
+                </td>
+                <td class="p-4 border-b border-slate-100">
+                  <a href="${v.rcImage}" target="_blank" class="text-indigo-600 hover:underline text-xs flex items-center gap-1"><i data-lucide="external-link" class="h-3 w-3"></i> View RC</a>
+                </td>
+                <td class="p-4 border-b border-slate-100">
+                  <span class="px-2 py-1 rounded text-[10px] font-bold ${statusBadge}">${v.verificationStatus}</span>
+                </td>
+                <td class="p-4 border-b border-slate-100 text-right">
+                  ${v.verificationStatus === 'PENDING' ? `
+                    <div class="flex justify-end gap-2">
+                      <button onclick="handleVerifyVehicle('${v.id}', 'VERIFIED')" class="bg-emerald-50 text-emerald-600 hover:bg-emerald-100 px-2 py-1 rounded font-bold text-xs transition-colors">Approve</button>
+                      <button onclick="handleVerifyVehicle('${v.id}', 'REJECTED')" class="bg-rose-50 text-rose-600 hover:bg-rose-100 px-2 py-1 rounded font-bold text-xs transition-colors">Reject</button>
+                    </div>
+                  ` : `<span class="text-xs text-slate-400">Processed</span>`}
+                </td>
+              </tr>
+            `;
+          }).join('');
+          lucide.createIcons();
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function handleVerifyVehicle(id, status) {
+      if (!confirm(`Are you sure you want to ${status.toLowerCase()} this vehicle?`)) return;
+      try {
+        const res = await fetch(`${API_BASE}/admin/vehicles/${id}/verify`, {
+          method: 'PATCH',
+          headers: getHeaders(),
+          body: JSON.stringify({ status })
+        });
+        const json = await res.json();
+        if (json.success) {
+          showToast('Vehicle ' + status.toLowerCase() + ' successfully', 'success');
+          fetchAdminVehicles();
+        } else {
+          showToast(json.error?.message, 'error');
+        }
+      } catch (err) {
+        showToast('Communication error', 'error');
+      }
+    }
+
+    async function fetchAdminEmployees() {
+      const container = document.getElementById('adminEmployeesList');
+      container.innerHTML = '<tr><td colspan="5" class="p-8 text-center text-slate-400 text-sm">Loading employees...</td></tr>';
+      try {
+        const res = await fetch(`${API_BASE}/admin/employees`, { headers: getHeaders() });
+        const json = await res.json();
+        if (json.success && json.data) {
+          container.innerHTML = json.data.map(e => {
+            let statusBadge = e.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-700' :
+                              e.status === 'SUSPENDED' ? 'bg-rose-100 text-rose-700' :
+                              'bg-slate-100 text-slate-700';
+            let roleBadge = e.role === 'ADMIN' ? 'text-indigo-600 font-black' : 'text-slate-600';
+
+            return `
+              <tr class="hover:bg-slate-50 transition-colors">
+                <td class="p-4 border-b border-slate-100">
+                  <div class="flex items-center gap-3">
+                    <div class="h-10 w-10 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold">
+                      ${e.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                      <p class="font-bold text-slate-800 text-sm ${roleBadge}">${e.name}</p>
+                      <p class="text-xs text-slate-500">${e.email}</p>
+                    </div>
+                  </div>
+                </td>
+                <td class="p-4 border-b border-slate-100">
+                  <p class="font-semibold text-slate-700 text-xs">${e.department || 'N/A'}</p>
+                  <p class="text-xs text-slate-500">${e.role}</p>
+                </td>
+                <td class="p-4 border-b border-slate-100 text-xs text-slate-600">
+                  Vehicles: <b>${e._count.vehicles}</b><br>
+                  Rides: <b>${e._count.rides}</b><br>
+                  Bookings: <b>${e._count.bookings}</b>
+                </td>
+                <td class="p-4 border-b border-slate-100">
+                  <span class="px-2 py-1 rounded text-[10px] font-bold ${statusBadge}">${e.status}</span>
+                </td>
+                <td class="p-4 border-b border-slate-100 text-right">
+                  ${e.role !== 'ADMIN' ? `
+                    ${e.status === 'ACTIVE' ? 
+                      `<button onclick="handleEmployeeStatus('${e.id}', 'SUSPENDED')" class="bg-rose-50 text-rose-600 hover:bg-rose-100 px-3 py-1 rounded font-bold text-xs transition-colors">Suspend</button>` :
+                      `<button onclick="handleEmployeeStatus('${e.id}', 'ACTIVE')" class="bg-emerald-50 text-emerald-600 hover:bg-emerald-100 px-3 py-1 rounded font-bold text-xs transition-colors">Activate</button>`
+                    }
+                  ` : '<span class="text-[10px] uppercase text-indigo-400 font-bold">System Admin</span>'}
+                </td>
+              </tr>
+            `;
+          }).join('');
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function handleEmployeeStatus(id, status) {
+      if (!confirm(`Are you sure you want to change employee status to ${status}?`)) return;
+      try {
+        const res = await fetch(`${API_BASE}/admin/employees/${id}/status`, {
+          method: 'PATCH',
+          headers: getHeaders(),
+          body: JSON.stringify({ status })
+        });
+        const json = await res.json();
+        if (json.success) {
+          showToast(`Employee ${status.toLowerCase()} successfully`, 'success');
+          fetchAdminEmployees();
+        } else {
+          showToast(json.error?.message, 'error');
+        }
+      } catch (err) {
+        showToast('Communication error', 'error');
+      }
+    }
+
+    async function fetchAdminRides() {
+      const container = document.getElementById('adminRidesList');
+      container.innerHTML = '<tr><td colspan="5" class="p-8 text-center text-slate-400 text-sm">Loading rides...</td></tr>';
+      try {
+        const res = await fetch(`${API_BASE}/admin/rides`, { headers: getHeaders() });
+        const json = await res.json();
+        if (json.success && json.data) {
+          container.innerHTML = json.data.map(r => {
+            let statusColor = r.status === 'COMPLETED' ? 'text-emerald-600' :
+                              r.status === 'CANCELLED' ? 'text-rose-600' :
+                              r.status === 'STARTED' ? 'text-indigo-600' : 'text-amber-500';
+            return `
+              <tr class="hover:bg-slate-50 transition-colors">
+                <td class="p-4 border-b border-slate-100">
+                  <span class="bg-slate-100 text-slate-800 px-2 py-1 rounded text-xs font-mono font-bold">${r.rideCode}</span>
+                  <p class="text-[10px] text-slate-400 mt-1">${new Date(r.pickupAt).toLocaleString()}</p>
+                </td>
+                <td class="p-4 border-b border-slate-100">
+                  <p class="font-bold text-slate-800 text-xs">${r.driver.name}</p>
+                  <p class="text-[10px] text-slate-500">${r.vehicle.brand} ${r.vehicle.model} (${r.vehicle.vehicleNumber})</p>
+                </td>
+                <td class="p-4 border-b border-slate-100">
+                  <p class="text-xs text-slate-600 truncate max-w-[200px]" title="${r.sourceAddress}"><i data-lucide="map-pin" class="inline h-3 w-3 text-emerald-500"></i> ${r.sourceAddress.split(',')[0]}</p>
+                  <p class="text-xs text-slate-600 truncate max-w-[200px]" title="${r.destinationAddress}"><i data-lucide="flag" class="inline h-3 w-3 text-rose-500"></i> ${r.destinationAddress.split(',')[0]}</p>
+                </td>
+                <td class="p-4 border-b border-slate-100 text-xs text-slate-600">
+                  ₹${r.pricePerSeat} / seat<br>
+                  ${r._count.participants} Bookings
+                </td>
+                <td class="p-4 border-b border-slate-100">
+                  <span class="text-xs font-black ${statusColor}">${r.status}</span>
+                </td>
+              </tr>
+            `;
+          }).join('');
+          lucide.createIcons();
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function fetchAdminBookings() {
+      const container = document.getElementById('adminBookingsList');
+      container.innerHTML = '<tr><td colspan="5" class="p-8 text-center text-slate-400 text-sm">Loading bookings...</td></tr>';
+      try {
+        const res = await fetch(`${API_BASE}/admin/bookings`, { headers: getHeaders() });
+        const json = await res.json();
+        if (json.success && json.data) {
+          container.innerHTML = json.data.map(b => {
+            let statusColor = b.status === 'ACCEPTED' ? 'text-emerald-600' :
+                              b.status === 'REJECTED' || b.status === 'CANCELLED' ? 'text-rose-600' : 'text-amber-500';
+            return `
+              <tr class="hover:bg-slate-50 transition-colors">
+                <td class="p-4 border-b border-slate-100 text-xs text-slate-500">
+                  ${new Date(b.createdAt).toLocaleString()}
+                </td>
+                <td class="p-4 border-b border-slate-100">
+                  <p class="font-bold text-slate-800 text-xs">${b.passenger.name}</p>
+                  <p class="text-[10px] text-slate-500">${b.passenger.employeeId}</p>
+                </td>
+                <td class="p-4 border-b border-slate-100">
+                  <span class="bg-slate-100 text-slate-800 px-1.5 py-0.5 rounded text-[10px] font-mono font-bold">${b.ride.rideCode}</span>
+                  <p class="text-[10px] text-slate-500 mt-0.5">Driver: ${b.ride.driver.name}</p>
+                </td>
+                <td class="p-4 border-b border-slate-100 text-xs font-semibold text-slate-700">
+                  ${b.seatsBooked}
+                </td>
+                <td class="p-4 border-b border-slate-100">
+                  <span class="text-[10px] font-black uppercase ${statusColor}">${b.status}</span>
+                </td>
+              </tr>
+            `;
+          }).join('');
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
     async function fetchAdminReports() {
       const container = document.getElementById('demoAdminReportsList');
       container.innerHTML = '<span class="text-xs text-slate-400">Loading admin violation feed...</span>';

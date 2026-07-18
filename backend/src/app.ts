@@ -12,6 +12,7 @@ import rideRouter from './routes/ride.route.js';
 import bookingRouter from './routes/booking.route.js';
 import walletRouter from './routes/wallet.route.js';
 import reportRouter from './routes/report.route.js';
+import adminRouter from './routes/admin.route.js';
 import { errorHandler } from './middleware/error.middleware.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -36,6 +37,7 @@ app.use('/api/v1/rides', rideRouter);
 app.use('/api/v1/bookings', bookingRouter);
 app.use('/api/v1/wallet', walletRouter);
 app.use('/api/v1/reports', reportRouter);
+app.use('/api/v1/admin', adminRouter);
 
 // Centralized error handler
 app.use(errorHandler);
