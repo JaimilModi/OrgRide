@@ -250,7 +250,7 @@
               <div class="p-3.5 bg-amber-50 rounded-xl text-amber-600"><i data-lucide="wallet" class="h-6 w-6"></i></div>
               <div>
                 <span class="text-xs text-slate-400 uppercase tracking-wider block font-semibold">Wallet Wallet</span>
-                <span id="homeStatWallet" class="text-lg font-bold text-slate-800 mt-0.5">$0.00</span>
+                <span id="homeStatWallet" class="text-lg font-bold text-slate-800 mt-0.5">₹0.00</span>
               </div>
             </div>
           </div>
@@ -413,7 +413,7 @@
                   <input id="offerTime" type="time" required class="mt-1 block w-full rounded-lg border-slate-200 border bg-slate-50/50 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2.5">
                 </div>
                 <div>
-                  <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider">Fare Price Per Seat ($)</label>
+                  <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider">Fare Price Per Seat (₹)</label>
                   <input id="offerPrice" type="number" step="0.5" value="15" required class="mt-1 block w-full rounded-lg border-slate-200 border bg-slate-50/50 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2.5">
                 </div>
                 <div class="flex items-center pt-5">
@@ -1955,7 +1955,7 @@
               </div>
               <div class="flex flex-row md:flex-col items-center md:items-end justify-between w-full md:w-auto gap-4 md:gap-2 pt-4 md:pt-0 border-t md:border-t-0 border-slate-50">
                 <div class="text-left md:text-right">
-                  <span class="text-xl font-black text-slate-800">$${Number(r.pricePerSeat).toFixed(2)}</span>
+                  <span class="text-xl font-black text-slate-800">₹${Number(r.pricePerSeat).toFixed(2)}</span>
                   <span class="text-xs text-slate-400 block">${r.availableSeats - r.bookedSeats} seats available</span>
                 </div>
                 <div class="flex gap-2">
@@ -2178,7 +2178,7 @@
             const isPaid = await checkIfBookingPaid(activeBooking.id);
             if (!isPaid) {
               payBtn.classList.remove('hidden');
-              payBtn.innerText = `Pay Fare ($${(Number(activeBooking.seatsBooked) * Number(activeRide.pricePerSeat)).toFixed(2)})`;
+              payBtn.innerText = `Pay Fare (₹${(Number(activeBooking.seatsBooked) * Number(activeRide.pricePerSeat)).toFixed(2)})`;
             }
           }
         }
@@ -2326,7 +2326,7 @@
         const res = await fetch(`${API_BASE}/rides/${currentRide.id}/complete`, { method: 'POST', headers: getHeaders() });
         const json = await res.json();
         if (json.success) {
-          showToast(`🏁 Ride completed successfully! Driver credited: $${json.data.creditedAmount}`, 'success');
+          showToast(`🏁 Ride completed successfully! Driver credited: ₹${json.data.creditedAmount}`, 'success');
           refreshActiveDemoState();
         } else {
           showToast('Failed to complete ride: ' + json.error?.message, 'error');
