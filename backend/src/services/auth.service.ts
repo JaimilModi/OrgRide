@@ -20,6 +20,104 @@ export interface LoginResult {
 
 export class AuthService {
   /**
+   * Registers a new employee and optionally their vehicle
+   */
+  static async register(data: any): Promise<LoginResult> {
+    const { name, email, phone, gender, password, ...driverFields } = data;
+    
+    // Check if employee already exists
+    const existingEmployee = await prisma.employee.findUnique({
+      where: { email }
+    });
+
+    if (existingEmployee) {
+      throw new BadRequestError('Email is already registered');
+    }
+
+    // Get first organization as default for hackathon
+    let organization = await prisma.organization.findFirst();
+    if (!organization) {
+      organization = await prisma.organization.create({
+        data: {
+          name: 'OrgRide Default Org',
+          domain: email.includes('@') ? email.split('@')[1] : 'orgride.com',
+        }
+      });
+    }
+
+    // Hash password
+    const passwordHash = await bcrypt.hash(password, 10);
+    
+    // Generate random employee ID
+    const employeeId = 'EMP-' + Math.floor(10000 + Math.random() * 90000);
+
+    // Create employee
+    const employee = await prisma.employee.create({
+      data: {
+        orgId: organization.id,
+        employeeId,
+        email,
+        passwordHash,
+        name,
+        phone,
+        gender: gender || 'MALE',
+        isFirstLogin: false,
+        status: 'ACTIVE',
+      },
+      include: {
+        organization: true
+      }
+    });
+
+    // If driver fields are provided, create a vehicle with dummy data for missing fields
+    if (driverFields.vehicleNumber && driverFields.vehicleType) {
+      await prisma.vehicle.create({
+        data: {
+          ownerId: employee.id,
+          vehicleNumber: driverFields.vehicleNumber,
+          type: driverFields.vehicleType,
+          brand: 'Generic Brand',
+          model: 'Generic Model',
+          color: 'White',
+          fuelType: driverFields.fuelType || 'PETROL',
+          seatingCapacity: parseInt(driverFields.availableSeats) || 4,
+          registrationYear: new Date().getFullYear(),
+          vehicleImage: driverFields.vehiclePhoto || 'dummy-url',
+          rcNumber: 'RC-' + Math.floor(10000 + Math.random() * 90000),
+          rcImage: driverFields.rcPhoto || 'dummy-url',
+          insuranceExpiry: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
+          status: 'ACTIVE'
+        }
+      });
+    }
+
+    // Generate JWT token
+    const token = jwt.sign(
+      {
+        id: employee.id,
+        email: employee.email,
+        role: employee.role,
+        orgId: employee.orgId
+      },
+      env.JWT_SECRET,
+      { expiresIn: env.JWT_EXPIRES_IN as any }
+    );
+
+    return {
+      token,
+      isFirstLogin: employee.isFirstLogin,
+      employee: {
+        id: employee.id,
+        employeeId: employee.employeeId,
+        email: employee.email,
+        name: employee.name,
+        role: employee.role,
+        orgId: employee.orgId
+      }
+    };
+  }
+
+  /**
    * Authenticates an employee by email or employee ID
    */
   static async login(loginId: string, password: string): Promise<LoginResult> {

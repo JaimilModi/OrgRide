@@ -21,3 +21,21 @@ export const ChangePasswordSchema = z.object({
     }).min(8, 'New password must be at least 8 characters long'),
   }),
 });
+
+export const RegisterSchema = z.object({
+  body: z.object({
+    name: z.string().min(1, 'Name is required'),
+    email: z.string().email('Invalid email address'),
+    phone: z.string().optional(),
+    gender: z.enum(['MALE', 'FEMALE', 'OTHER']).optional().default('MALE'),
+    password: z.string().min(6, 'Password must be at least 6 characters long'),
+    
+    // Driver specific fields (optional)
+    vehiclePhoto: z.string().optional(),
+    rcPhoto: z.string().optional(),
+    vehicleNumber: z.string().optional(),
+    vehicleType: z.enum(['HATCHBACK', 'SEDAN', 'SUV', 'BIKE', 'OTHER']).optional(),
+    fuelType: z.enum(['PETROL', 'DIESEL', 'CNG', 'EV', 'HYBRID']).optional(),
+    availableSeats: z.union([z.string(), z.number()]).optional(),
+  }),
+});

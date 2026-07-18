@@ -15,6 +15,18 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
     next(error);
   }
 };
+export const register = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const result = await AuthService.register(req.body);
+
+    res.status(StatusCodes.CREATED).json({
+      success: true,
+      data: result
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 
 export const changePassword = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {

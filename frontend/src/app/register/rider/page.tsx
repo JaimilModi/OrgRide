@@ -49,7 +49,7 @@ export default function RiderRegistrationPage() {
   return (
     <div className="min-h-[100dvh] lg:h-[100dvh] flex bg-white lg:overflow-hidden">
       {/* Left Panel - Branding */}
-      <div className="hidden lg:flex lg:w-1/3 bg-primary-950 flex-col justify-between p-10 relative overflow-hidden">
+      <div className="hidden lg:flex lg:w-[40%] bg-primary-950 flex-col justify-between p-10 relative overflow-hidden">
         {/* Subtle background element */}
         <div className="absolute inset-0 pointer-events-none opacity-20" aria-hidden="true">
           <svg className="w-full h-full" viewBox="0 0 800 800" fill="none">
@@ -82,7 +82,7 @@ export default function RiderRegistrationPage() {
       </div>
 
       {/* Right Panel - Form */}
-      <div className="w-full lg:w-2/3 flex items-center justify-center p-6 lg:p-8 lg:overflow-y-auto">
+      <div className="w-full lg:w-[60%] flex items-center justify-center p-6 lg:p-8 lg:overflow-y-auto">
         <div className="w-full max-w-xl">
           <div className="lg:hidden mb-6 flex justify-center">
             <Link href="/" className="flex items-center gap-2">

@@ -108,3 +108,34 @@ export const getPublicRide = async (req: AuthenticatedRequest, res: Response, ne
   }
 };
 
+export const startRide = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const driverId = req.user!.id;
+    const ride = await RideService.startRide(req.params.id, driverId);
+
+    res.status(StatusCodes.OK).json({
+      success: true,
+      message: 'Ride started successfully',
+      data: ride
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const completeRide = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const driverId = req.user!.id;
+    const result = await RideService.completeRide(req.params.id, driverId);
+
+    res.status(StatusCodes.OK).json({
+      success: true,
+      message: 'Ride completed successfully',
+      data: result
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+

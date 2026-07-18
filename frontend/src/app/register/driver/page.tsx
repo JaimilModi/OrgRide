@@ -69,10 +69,6 @@ export default function DriverRegistrationPage() {
     }
 
     try {
-      // The API contract shows we need to hit auth/register (which doesn't exist).
-      // If it existed, we would send formData. 
-      // Uploads require /api/v1/upload with a token, which we don't have until logged in.
-      // This is a known backend gap.
       await registerEmployee({
         ...formData,
         // Send vehicle photo and rc photo as fake URLs since upload endpoint requires token
@@ -90,7 +86,7 @@ export default function DriverRegistrationPage() {
   return (
     <div className="min-h-[100dvh] flex flex-col lg:flex-row bg-white w-full">
       {/* Left Panel - Branding */}
-      <div className="hidden lg:flex lg:w-[35%] bg-primary-950 flex-col justify-between p-10 lg:p-12 relative overflow-hidden lg:sticky lg:top-0 lg:h-[100dvh]">
+      <div className="hidden lg:flex lg:w-[40%] bg-primary-950 flex-col justify-between p-10 lg:p-12 relative overflow-hidden lg:sticky lg:top-0 lg:h-[100dvh]">
         {/* Subtle background element matching rider/signin system */}
         <div className="absolute inset-0 pointer-events-none opacity-20" aria-hidden="true">
           <svg className="w-full h-full" viewBox="0 0 800 800" fill="none">
@@ -123,7 +119,7 @@ export default function DriverRegistrationPage() {
       </div>
 
       {/* Right Panel - Form */}
-      <div className="w-full lg:w-[65%] flex flex-col items-center justify-center p-6 lg:p-12 min-h-[100dvh] lg:min-h-0 py-12">
+      <div className="w-full lg:w-[60%] flex flex-col items-center justify-center p-6 lg:p-12 min-h-[100dvh] lg:min-h-0 py-12">
         <div className="w-full max-w-[800px]">
           <div className="lg:hidden mb-6 flex justify-center">
             <Link href="/" className="flex items-center gap-2">
@@ -412,9 +408,9 @@ export default function DriverRegistrationPage() {
             </form>
           )}
 
-          <div className="mt-8 pt-8 border-t border-neutral-200">
+          <div className="mt-6 pt-6 border-t border-neutral-200">
             <p className="text-sm text-neutral-600 font-medium text-center">
-              Looking for a ride instead? <Link href="/register/rider" className="text-primary-700 hover:underline">Register as a Rider</Link>
+              Looking for a ride instead? <Link href="/register/rider" className="text-accent-600 hover:underline">Register as a Rider</Link>
             </p>
             <p className="mt-2 text-sm text-neutral-600 font-medium text-center">
               Already have an account? <Link href="/signin" className="text-primary-700 hover:underline">Sign In</Link>

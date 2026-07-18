@@ -40,7 +40,7 @@ export default function SignInPage() {
   return (
     <div className="min-h-[100dvh] lg:h-[100dvh] flex bg-white lg:overflow-hidden">
       {/* Left Panel - Branding */}
-      <div className="hidden lg:flex lg:w-1/2 bg-primary-950 flex-col justify-between p-10 relative overflow-hidden">
+      <div className="hidden lg:flex lg:w-[45%] bg-primary-950 flex-col justify-between p-10 relative overflow-hidden">
         {/* Subtle background element */}
         <div className="absolute inset-0 pointer-events-none opacity-20" aria-hidden="true">
           <svg className="w-full h-full" viewBox="0 0 800 800" fill="none">
@@ -75,7 +75,7 @@ export default function SignInPage() {
       </div>
 
       {/* Right Panel - Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 lg:p-8 lg:overflow-y-auto">
+      <div className="w-full lg:w-[55%] flex items-center justify-center p-6 lg:p-8 lg:overflow-y-auto">
         <div className="w-full max-w-md">
           <div className="lg:hidden mb-8 flex justify-center">
             <Link href="/" className="flex items-center gap-2">
@@ -87,8 +87,7 @@ export default function SignInPage() {
             </Link>
           </div>
 
-          <h2 className="text-3xl font-extrabold text-primary-950 mb-1.5">Welcome back</h2>
-          <p className="text-neutral-500 mb-6">Sign in to continue to OrgRide.</p>
+          <h2 className="text-3xl font-extrabold text-primary-950 mb-6">Welcome back</h2>
 
           {error && (
             <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">
